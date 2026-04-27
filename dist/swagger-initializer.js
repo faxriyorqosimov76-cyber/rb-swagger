@@ -15,7 +15,22 @@ window.onload = function() {
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
-    layout: "StandaloneLayout"
+    layout: "StandaloneLayout",
+    onComplete: function() {
+      // Kod bloklarini bosganda nusxa olish funksiyasi
+      document.addEventListener('click', function(e) {
+        const codeBlock = e.target.closest('code');
+        if (codeBlock && codeBlock.closest('.description')) {
+          const text = codeBlock.innerText.replace('bash\n', '').replace('bash ', '');
+          navigator.clipboard.writeText(text).then(() => {
+            const originalBg = codeBlock.style.backgroundColor;
+            codeBlock.style.backgroundColor = '#4990e2';
+            setTimeout(() => codeBlock.style.backgroundColor = originalBg, 500);
+            alert('Nusxa olindi!');
+          });
+        }
+      });
+    }
   });
 
   //</editor-fold>

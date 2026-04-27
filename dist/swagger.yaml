@@ -1,27 +1,44 @@
 openapi: 3.0.0
 info:
-  title: Category Tree API
+  title: Smart-marker API documentation
   description: >
-    Ushbu API mahsulot kategoriyalarini ierarxik ko'rinishda olish uchun mo'ljallangan. 
-    Lazy Loading tamoyili asosida ishlaydi va har bir kategoriya uchun uning barcha 
-    avlodlaridagi jami mahsulotlar sonini hisoblab beradi.
+    Bu hujjatda smart-marker uchun yozilgan api 
+    dasturlar haqida malumot berilgan. Shu hujjatdan foydalanib siz smart-marker uchun 
+    mobil ilova yaratishingiz mumkin. 
+    Dasturni ishlab chiqishda qandaydir xatolikka duch kelsangiz yoki savolingiz bo'lsa
+    bizga murojaat qilishingiz mumkin.
   version: 1.0.0
 
+# =================================================================
+# 1. TAGS (Guruhlar)
+# =================================================================
 tags:
   - name: Categories
     description: Mahsulot kategoriyalari bilan ishlash bo'limi (Asosiy va Ochiq kategoriyalar)
+  - name: Products
+    description: Mahsulotlar bilan ishlash bo'limi
 
+# =================================================================
+# 2. SERVERS (Server manzillari)
+# =================================================================
 servers:
   - url: https://api.cabinet.smart-market.uz/api/
     description: Asosiy ishchi server
 
+# =================================================================
+# 3. PATHS (API Endpointlari)
+# =================================================================
 paths:
+
+  # -----------------------------------------------------------------
+  # CATEGORIES: Ierarxik daraxt ko'rinishidagi kategoriyalar
+  # -----------------------------------------------------------------
   /v1/mobile/product/categories-tree:
     get:
       tags:
         - Categories
       summary: Kategoriyalar ro'yxatini olish (Lazy Loading)
-      description: >
+      description: |
         `parent_id` yuborilsa, o'sha kategoriyaning ichidagi child-kategoriyalarni qaytaradi. 
         Agar yuborilmasa yoki 0 yuborilsa, eng yuqori (Root) sathni qaytaradi.
       parameters:
@@ -47,12 +64,15 @@ paths:
         '500':
           description: Serverdagi ichki xatolik
 
+  # -----------------------------------------------------------------
+  # CATEGORIES: Ochiq (Public) kategoriyalar ro'yxati
+  # -----------------------------------------------------------------
   /v1/public/product/categories:
     get:
       tags:
         - Categories
       summary: Asosiy (Root) kategoriyalar ro'yxatini olish (Public)
-      description: >
+      description: |
         Faqat `state = 1` va `parent_id = 0` bo'lgan, ya'ni eng yuqori sathdagi kategoriyalarni qaytaradi. 
         So'rovda yuborilgan `#lan` (language) parametriga qarab kategoriya nomi mos tilda qaytadi.
       parameters:
@@ -76,8 +96,288 @@ paths:
         '500':
           description: Server xatoligi
 
+  # -----------------------------------------------------------------
+  # PRODUCTS: Yangi mahsulotlar ro'yxati (SQL so'rovi asosida)
+  # -----------------------------------------------------------------
+  /v1/mobile/products/new:
+    get:
+      tags:
+        - Products
+      summary: Mahsulotlar ro'yxatini olish
+      description: |
+        Barcha faol mahsulotlarni sahifalangan holda qaytaradi. 
+        Yuborilgan `#lan` (language) parametriga qarab mahsulot nomi mos tilda qaytadi.
+      parameters:
+        - name: lan
+          in: header
+          description: "Tilni tanlash: 'la' (Latin), 'ru' (Russian), 'uz' (Cyrillic - default)"
+          required: false
+          schema:
+            type: string
+            enum: [la, ru, uz]
+            default: uz
+        - name: page
+          in: query
+          description: Sahifa raqami
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Bir sahifadagi mahsulotlar soni
+          required: false
+          schema:
+            type: integer
+            default: 8
+      responses:
+        '200':
+          description: Mahsulotlar muvaffaqiyatli yuklandi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          description: Server xatoligi
+
+  # -----------------------------------------------------------------
+  # PRODUCTS: Kategoriya bo'yicha mahsulotlar ro'yxati
+  # -----------------------------------------------------------------
+  /v1/mobile/category/products:
+    get:
+      tags:
+        - Products
+      summary: Kategoriya bo'yicha mahsulotlar ro'yxati
+      description: |
+        Muayyan kategoriya IDsi asosida saralangan va filtrlanadi mahsulotlar ro'yxatini qaytaradi.
+      parameters:
+        - name: category_id
+          in: query
+          description: "Kategoriya identifikatori (Masalan: elektronika, maishiy texnika va h.k.)"
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: Accept-Language
+          in: header
+          description: "Tilni tanlash (uz, ru, la)"
+          required: false
+          schema:
+            type: string
+            enum: [uz, ru, la]
+            default: uz
+        - name: page
+          in: query
+          description: Sahifa raqami
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Har bir sahifadagi elementlar soni
+          required: false
+          schema:
+            type: integer
+            default: 8
+      responses:
+        '200':
+          description: Kategoriyaga tegishli mahsulotlar muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryProduct'
+        '400':
+          description: Noto'g'ri so'rov parametrlari yuborildi
+
+  # -----------------------------------------------------------------
+  # PRODUCTS: O'xshash mahsulotlar ro'yxati
+  # -----------------------------------------------------------------
+  /v1/mobile/products/similar:
+    get:
+      tags:
+        - Products
+      summary: O'xshash mahsulotlar ro'yxati
+      description: |
+        Berilgan mahsulot IDsi asosida unga mos keluvchi (bir xil kategoriyadagi va narxi yaqin) boshqa mahsulotlarni qaytaradi.
+      parameters:
+        - name: product_id
+          in: query
+          description: "Asosiy mahsulot identifikatori"
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: Accept-Language
+          in: header
+          description: "Til: uz, ru, la"
+          required: false
+          schema:
+            type: string
+            enum: [uz, ru, la]
+            default: uz
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: O'xshash mahsulotlar muvaffaqiyatli topildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimilarProduct'
+        '404':
+          description: Asosiy mahsulot topilmadi
+
+  # -----------------------------------------------------------------
+  # PRODUCTS: Tavsiya etilgan mahsulotlar ro'yxati
+  # -----------------------------------------------------------------
+  /v1/mobile/products/recommended:
+    get:
+      tags:
+        - Products
+      summary: Tavsiya etilgan mahsulotlar ro'yxati
+      description: |
+        Tizimdagi 'TOP' servis turiga ega bo'lgan mahsulotlarni qaytaradi. 
+        Response tarkibida jami mahsulotlar soni (all_count) va mahsulotlar ro'yxati (recommended_products) mavjud.
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: "Tilni tanlash: uz, ru, la"
+          required: false
+          schema:
+            type: string
+            enum: [uz, ru, la]
+            default: uz
+        - name: page
+          in: query
+          description: Sahifa raqami
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Sahifadagi mahsulotlar soni
+          required: false
+          schema:
+            type: integer
+            default: 8
+      responses:
+        '200':
+          description: Muvaffaqiyatli yakunlandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  all_count:
+                    type: integer
+                    description: "Filtrga mos keluvchi barcha mahsulotlarning umumiy soni"
+                    example: 120
+                  recommended_products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecommendedProduct'
+
+  # -----------------------------------------------------------------
+  # PRODUCTS: Mahsulot haqida to'liq ma'lumot (v2)
+  # -----------------------------------------------------------------
+  /api/v2/mobile/product/details:
+    get:
+      tags:
+        - Products
+      summary: Mahsulot haqida to'liq ma'lumot (v2)
+      description: |
+        Mahsulotning texnik parametrlari, sotuvchi ma'lumotlari, 
+        variatsiyalari (rang, xotira) va reytingini o'z ichiga olgan batafsil ma'lumot.
+      parameters:
+        - name: product_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 1599627
+        - name: lang
+          in: query
+          required: false
+          description: "Til kodi (uz, ru, la)"
+          schema:
+            type: string
+            enum: [uz, ru, la]
+            default: uz
+        - name: User-Agent
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailsResponse'
+
+  # -----------------------------------------------------------------
+  # PRODUCTS: Mahsulotga qoldirilgan izohlar ro'yxati
+  # -----------------------------------------------------------------
+  /v1/mobile/product/comments:
+    get:
+      tags:
+        - Products
+      summary: Mahsulotga qoldirilgan izohlar ro'yxati
+      description: Muayyan mahsulot uchun foydalanuvchilar tomonidan qoldirilgan reyting va matnli izohlarni qaytaradi.
+      parameters:
+        - name: product_id
+          in: query
+          description: "Mahsulot identifikatori"
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: lang
+          in: query
+          description: "Til kodi (la - lotin, uz - kirill). Muallif ismini moslashtirish uchun ishlatiladi."
+          required: false
+          schema:
+            type: string
+            enum: [uz, ru, la]
+            default: uz
+      responses:
+        '200':
+          description: Izohlar ro'yxati muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductComment'
+        '400':
+          description: Noto'g'ri mahsulot IDsi yuborildi
+
+# =================================================================
+# 4. COMPONENTS (Ma'lumot modellari)
+# =================================================================
 components:
   schemas:
+
+    # Mahsulot kategoriyasi modeli (Daraxt ko'rinishi uchun)
     Category:
       type: object
       properties:
@@ -103,6 +403,7 @@ components:
           description: Kategoriya va uning barcha quyi tizimidagi jami faol mahsulotlar soni
           example: 125
 
+    # Ochiq kategoriya modeli (Public API uchun)
     PublicCategory:
       type: object
       properties:
@@ -123,3 +424,303 @@ components:
           nullable: true
           description: Kategoriya uchun rasm yoki belgi (URL yoki klass nomi)
           example: "fa-mobile-alt"
+
+    # Mahsulot modeli (Products API uchun)
+    Product:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          description: Mahsulotning IDsi
+          example: 1001
+        name:
+          type: string
+          description: Tanlangan tildagi mahsulot nomi
+          example: "iPhone 15 Pro"
+        image_id:
+          type: string
+          description: Asosiy rasm IDsi (URL uchun)
+          example: "photo_2024_01.jpg"
+        current_price:
+          type: number
+          description: Hozirgi sotuv narxi
+          example: 12000000
+        original_price:
+          type: number
+          nullable: true
+          description: Eski (chegirma bo'lishidan oldingi) narxi
+          example: 14000000
+        is_discounted:
+          type: boolean
+          description: Chegirma bormi yoki yo'q
+          example: true
+        discount_percentage:
+          type: integer
+          description: Chegirma foizi
+          example: 14
+        average_rating:
+          type: integer
+          description: O'rtacha reyting
+          example: 5
+        reviews_count:
+          type: integer
+          description: Izohlar soni
+          example: 24
+        available_amount:
+          type: integer
+          description: Omborxonadagi mavjud qoldiq
+          example: 50
+
+    # Kategoriya bo'yicha mahsulot modeli
+    CategoryProduct:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 201
+        title:
+          type: string
+          description: "Mahsulot nomi (tilga moslangan)"
+          example: "`Televizor LG Ultra HD"
+        image_id:
+          type: string
+          example: "img-889-xyz"
+        current_price:
+          type: number
+          format: double
+          example: 5400000
+        original_price:
+          type: number
+          format: double
+          example: 6000000
+        is_discounted:
+          type: boolean
+          example: true
+        discount_percentage:
+          type: integer
+          example: 10
+        average_rating:
+          type: integer
+          example: 4
+        reviews_count:
+          type: integer
+          example: 12
+        available_amount:
+          type: number
+          example: 5
+
+    # Mahsulot tafsilotlari javob modeli (v2)
+    ProductDetailsResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "27.04.2026 15:45:17"
+        status:
+          type: integer
+          example: 200
+        data:
+          $ref: '#/components/schemas/ProductData'
+
+    ProductData:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+        available_amount:
+          type: integer
+        technical_parameters:
+          type: string
+          description: "HTML formatidagi texnik tavsif"
+        is_discounted:
+          type: boolean
+        main_photo:
+          type: string
+        region:
+          $ref: '#/components/schemas/Location'
+        seller:
+          $ref: '#/components/schemas/Seller'
+        category:
+          $ref: '#/components/schemas/IdNamePair'
+        product_attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribute'
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductPhoto'
+
+    Seller:
+      type: object
+      properties:
+        name:
+          type: string
+        tin:
+          type: integer
+        phone_number:
+          type: string
+        rating:
+          type: number
+        comment_number:
+          type: integer
+
+    ProductAttribute:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [color, button, select]
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              value:
+                type: string
+              is_available:
+                type: boolean
+              image:
+                type: string
+                nullable: true
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    IdNamePair:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    ProductPhoto:
+      type: object
+      properties:
+        image:
+          type: string
+        is_main:
+          type: boolean
+
+    # Mahsulot izohi modeli
+    ProductComment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 54321
+        rating:
+          type: integer
+          description: "Foydalanuvchi bergan baho (1 dan 5 gacha)"
+          example: 5
+        comment:
+          type: string
+          description: "Izoh matni (SQL dagi 'note' maydoni)"
+          example: "Juda sifatli mahsulot ekan, tavsiya qilaman!"
+        created_at:
+          type: string
+          description: "Sana va vaqt (dd.mm.yyyy HH:mm formatida)"
+          example: "27.04.2026 14:30"
+        author_name:
+          type: string
+          description: "Izoh qoldirgan foydalanuvchining to'liq ismi yoki username'i"
+          example: "Eshmatov Toshmat"
+        author_photo:
+          type: string
+          nullable: true
+          description: "Foydalanuvchining profil rasmi IDsi yoki URL manzili"
+          example: "user_photo_99.png"
+
+    # Tavsiya etilgan mahsulot modeli
+    RecommendedProduct:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 450
+        title:
+          type: string
+          example: "Apple iPhone 15 Pro"
+        image_id:
+          type: string
+          description: "Mahsulot rasmi (main_photo)"
+          example: "https://cdn.example.uz/photo123.jpg"
+        current_price:
+          type: number
+          example: 15500000
+        original_price:
+          type: number
+          example: 17000000
+        is_discounted:
+          type: boolean
+          example: true
+        discount_percentage:
+          type: integer
+          example: 9
+        average_rating:
+          type: integer
+          example: 5
+        reviews_count:
+          type: integer
+          example: 84
+        available_amount:
+          type: number
+          description: "Sotuvda mavjud qolgan miqdor"
+          example: 12
+
+    # O'xshash mahsulot modeli
+    SimilarProduct:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 501
+        title:
+          type: string
+          example: "Noutbuk Lenovo Legion 5"
+        image_id:
+          type: string
+          example: "img-001-hub"
+        current_price:
+          type: number
+          example: 14500000
+        original_price:
+          type: number
+          example: 16000000
+        is_discounted:
+          type: boolean
+          example: true
+        discount_percentage:
+          type: integer
+          example: 9
+        average_rating:
+          type: integer
+          example: 5
+        reviews_count:
+          type: integer
+          example: 10
+        available_amount:
+          type: number
+          example: 5
