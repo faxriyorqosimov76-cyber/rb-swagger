@@ -17,6 +17,8 @@ tags:
     description: Mahsulot kategoriyalari bilan ishlash bo'limi (Asosiy va Ochiq kategoriyalar)
   - name: Products
     description: Mahsulotlar bilan ishlash bo'limi
+  - name: User
+    description: Foydalanuvchi profili va sozlamalari
 
 # =================================================================
 # 2. SERVERS (Server manzillari)
@@ -371,10 +373,50 @@ paths:
         '400':
           description: Noto'g'ri mahsulot IDsi yuborildi
 
+  # -----------------------------------------------------------------
+  # USER: Foydalanuvchi ma'lumotlarini olish
+  # -----------------------------------------------------------------
+  /api/v2/mobile/user/info:
+    get:
+      tags:
+        - User
+      summary: Foydalanuvchi ma'lumotlarini olish
+      description: |
+        Tizimga kirgan foydalanuvchining profili, bank rekvizitlari, 
+        yuridik manzili va shartnoma (oferta) holati haqida ma'lumot qaytaradi.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: User-Agent
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Foydalanuvchi ma'lumotlari muvaffaqiyatli olindi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResponse'
+        '401':
+          description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
+
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
 # =================================================================
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
   schemas:
 
     # Mahsulot kategoriyasi modeli (Daraxt ko'rinishi uchun)
@@ -507,7 +549,90 @@ components:
           example: 12
         available_amount:
           type: number
-          example: 5
+          example: 12
+
+    # Foydalanuvchi ma'lumotlari javob modeli
+    UserInfoResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "27.04.2026 16:01:04"
+        status:
+          type: integer
+          example: 200
+        data:
+          $ref: '#/components/schemas/UserData'
+
+    UserData:
+      type: object
+      properties:
+        org_id:
+          type: integer
+          description: "Tashkilot STIRi (INN)"
+          example: 308835814
+        full_name:
+          type: string
+          description: "Tashkilotning to'liq nomi"
+          example: '"TEX PRO-SILVER" MCHJ'
+        pinfl:
+          type: string
+          description: "JSHSHIR (PINFL)"
+          example: "32311751470046"
+        bank_name:
+          type: string
+          example: "DAVR BANK XATB"
+        account:
+          type: string
+          description: "Bank hisob raqami"
+          example: "20208000905434717001"
+        mfo:
+          type: string
+          example: "01069"
+        obl_name:
+          type: string
+          description: "Viloyat/Shahar nomi"
+          example: "Тошкент шахри"
+        area_name:
+          type: string
+          description: "Tuman nomi"
+          example: "Яшнобод тумани"
+        address:
+          type: string
+          example: "58-A HARBIY SHAHARCHA, 15-UY"
+        header_name:
+          type: string
+          description: "Rahbarning F.I.SH."
+          example: "MAMADALIYEV BAXTIMUROD"
+        mobile_phone:
+          type: string
+          example: "998935547520"
+        fully_signed:
+          type: string
+          description: "Shartnoma to'liq imzolangan sana"
+          example: "13.03.2026"
+        offer_link:
+          type: string
+          format: uri
+          description: "Oferta hujjati havolasi"
+          example: "https://hujjat.uz/document?id=..."
+        doc_status:
+          type: string
+          enum: [FULL_SIGNED, PENDING, REJECTED]
+          example: "FULL_SIGNED"
+        definition_type:
+          type: string
+          description: "Tarif turi"
+          example: "STANDART"
+        checked:
+          type: boolean
+          example: true
 
     # Mahsulot tafsilotlari javob modeli (v2)
     ProductDetailsResponse:
