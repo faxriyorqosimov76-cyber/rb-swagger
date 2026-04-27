@@ -19,6 +19,8 @@ tags:
     description: Mahsulotlar bilan ishlash bo'limi
   - name: User
     description: Foydalanuvchi profili va sozlamalari
+  - name: Content
+    description: Reklama va axborot kontentlari (Bannerlar va h.k.)
 
 # =================================================================
 # 2. SERVERS (Server manzillari)
@@ -300,7 +302,7 @@ paths:
   # -----------------------------------------------------------------
   # PRODUCTS: Mahsulot haqida to'liq ma'lumot (v2)
   # -----------------------------------------------------------------
-  /api/v2/mobile/product/details:
+  /v2/mobile/product/details:
     get:
       tags:
         - Products
@@ -374,9 +376,59 @@ paths:
           description: Noto'g'ri mahsulot IDsi yuborildi
 
   # -----------------------------------------------------------------
+  # PRODUCTS: Tanlangan IDlar ro'yxati bo'yicha mahsulotlar (Cart/Saved)
+  # -----------------------------------------------------------------
+  /v1/mobile/products/by-ids:
+    post:
+      tags:
+        - Products
+      summary: Tanlangan IDlar ro'yxati bo'yicha mahsulotlar (Cart/Saved)
+      description: |
+        Ushbu endpoint savatchadagi yoki saqlanganlar ro'yxatidagi mahsulotlar IDlari asosida 
+        ulardan to'liq ma'lumotlarni yig'ib beradi. Natijalar yuborilgan tartibda qaytariladi.
+      parameters:
+        - name: Accept-Language
+          in: header
+          description: "Til kodi (uz, ru, la)"
+          required: false
+          schema:
+            type: string
+            enum: [uz, ru, la]
+            default: uz
+        - name: lan
+          in: header
+          description: "Transliteratsiya uchun til parametri"
+          required: false
+          schema:
+            type: string
+            example: "la"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - products_list
+              properties:
+                products_list:
+                  type: array
+                  description: "Mahsulot IDlari massivi"
+                  items:
+                    type: integer
+                  example: [1619946, 1619945, 1619942, 1619930]
+      responses:
+        '200':
+          description: Muvaffaqiyatli yakunlandi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductBulkResponse'
+
+  # -----------------------------------------------------------------
   # USER: Foydalanuvchi ma'lumotlarini olish
   # -----------------------------------------------------------------
-  /api/v2/mobile/user/info:
+  /v2/mobile/user/info:
     get:
       tags:
         - User
@@ -407,6 +459,24 @@ paths:
                 $ref: '#/components/schemas/UserInfoResponse'
         '401':
           description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
+
+  # -----------------------------------------------------------------
+  # CONTENT: Mobil ilova uchun bannerlar ro'yxati
+  # -----------------------------------------------------------------
+  /v1/mobile/banners:
+    get:
+      tags:
+        - Content
+      summary: Mobil ilova uchun bannerlar ro'yxatini olish
+      description: |
+        Asosiy sahifada ko'rsatiladigan reklama bannerlari ro'yxatini, ularning desktop va mobil versiyalari hamda o'tish havolalari (callback_url) bilan qaytaradi.
+      responses:
+        '200':
+          description: Bannerlar muvaffaqiyatli olindi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerResponse'
 
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
@@ -777,6 +847,116 @@ components:
           nullable: true
           description: "Foydalanuvchining profil rasmi IDsi yoki URL manzili"
           example: "user_photo_99.png"
+
+    # Ko'p sonli mahsulotlar javob modeli
+    ProductBulkResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "27.04.2026 16:44:41"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        response:
+          type: string
+          nullable: true
+
+    # Mahsulot kartochkasi modeli (Bulk uchun)
+    ProductCard:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 1619945
+        title:
+          type: string
+          example: "гўшт қиймалагич"
+        image_id:
+          type: string
+          example: "ff80818117fff38c615fb617"
+        current_price:
+          type: number
+          example: 3800000
+        original_price:
+          type: number
+          nullable: true
+          example: null
+        is_discounted:
+          type: boolean
+          example: false
+        discount_percentage:
+          type: integer
+          example: 0
+        average_rating:
+          type: integer
+          example: 0
+        reviews_count:
+          type: integer
+          example: 0
+        available_amount:
+          type: integer
+          example: 100
+
+    # Bannerlar javob modeli
+    BannerResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "27.04.2026 18:03:37"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BannerItem'
+        response:
+          type: string
+          nullable: true
+
+    # Banner elementi modeli
+    BannerItem:
+      type: object
+      properties:
+        callback_url:
+          type: string
+          format: uri
+          description: "Banner bosilganda o'tiladigan havola"
+          example: "https://smart-market.uz/advertising"
+        desktop:
+          type: string
+          format: uri
+          description: "Desktop qurilmalar uchun rasm havolasi"
+          example: "https://api.cabinet.smart-market.uz/uploads/images/ff808181ba0c7ba5969773c3"
+        mobile:
+          type: string
+          format: uri
+          description: "Mobil qurilmalar uchun rasm havolasi"
+          example: "https://api.cabinet.smart-market.uz/uploads/images/ff8081819801cf6bf246d28a"
 
     # Tavsiya etilgan mahsulot modeli
     RecommendedProduct:
