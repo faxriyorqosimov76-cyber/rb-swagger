@@ -1,0 +1,125 @@
+openapi: 3.0.0
+info:
+  title: Category Tree API
+  description: >
+    Ushbu API mahsulot kategoriyalarini ierarxik ko'rinishda olish uchun mo'ljallangan. 
+    Lazy Loading tamoyili asosida ishlaydi va har bir kategoriya uchun uning barcha 
+    avlodlaridagi jami mahsulotlar sonini hisoblab beradi.
+  version: 1.0.0
+
+tags:
+  - name: Categories
+    description: Mahsulot kategoriyalari bilan ishlash bo'limi (Asosiy va Ochiq kategoriyalar)
+
+servers:
+  - url: https://api.cabinet.smart-market.uz/api/
+    description: Asosiy ishchi server
+
+paths:
+  /v1/mobile/product/categories-tree:
+    get:
+      tags:
+        - Categories
+      summary: Kategoriyalar ro'yxatini olish (Lazy Loading)
+      description: >
+        `parent_id` yuborilsa, o'sha kategoriyaning ichidagi child-kategoriyalarni qaytaradi. 
+        Agar yuborilmasa yoki 0 yuborilsa, eng yuqori (Root) sathni qaytaradi.
+      parameters:
+        - name: parent_id
+          in: query
+          description: Yuqori sath kategoriyasining ID raqami.
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 101
+      responses:
+        '200':
+          description: Muvaffaqiyatli natija
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '400':
+          description: Noto'g'ri so'rov parametrlari
+        '500':
+          description: Serverdagi ichki xatolik
+
+  /v1/public/product/categories:
+    get:
+      tags:
+        - Categories
+      summary: Asosiy (Root) kategoriyalar ro'yxatini olish (Public)
+      description: >
+        Faqat `state = 1` va `parent_id = 0` bo'lgan, ya'ni eng yuqori sathdagi kategoriyalarni qaytaradi. 
+        So'rovda yuborilgan `#lan` (language) parametriga qarab kategoriya nomi mos tilda qaytadi.
+      parameters:
+        - name: lan
+          in: header
+          description: "Tilni tanlash: 'la' (Latin), 'ru' (Russian), 'uz' (Cyrillic - default)"
+          required: false
+          schema:
+            type: string
+            enum: [la, ru, uz]
+            default: uz
+      responses:
+        '200':
+          description: Kategoriyalar muvaffaqiyatli yuklandi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicCategory'
+        '500':
+          description: Server xatoligi
+
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Kategoriyaning unikal IDsi
+          example: 543
+        parent_id:
+          type: integer
+          nullable: true
+          description: Otasining IDsi (eng yuqori sath bo'lsa 0 yoki null)
+          example: 101
+        name:
+          type: string
+          description: Kategoriyaning nomi
+          example: "Erkaklar kiyimlari"
+        has_children:
+          type: boolean
+          description: Ichida yana sub-kategoriyalar bor yoki yo'qligi
+          example: true
+        products_count:
+          type: integer
+          description: Kategoriya va uning barcha quyi tizimidagi jami faol mahsulotlar soni
+          example: 125
+
+    PublicCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Kategoriya IDsi
+          example: 12
+        name:
+          type: string
+          description: Tanlangan tildagi kategoriya nomi
+          example: "Elektronika"
+        num:
+          type: integer
+          description: Tartib raqami (Sorting order)
+          example: 1
+        icon:
+          type: string
+          nullable: true
+          description: Kategoriya uchun rasm yoki belgi (URL yoki klass nomi)
+          example: "fa-mobile-alt"
