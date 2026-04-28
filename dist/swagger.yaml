@@ -479,6 +479,95 @@ paths:
           description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
 
   # -----------------------------------------------------------------
+  # USER: Foydalanuvchi bank kartalari
+  # -----------------------------------------------------------------
+  /v1/mobile/user/cards:
+    get:
+      tags:
+        - User
+      summary: Foydalanuvchi kartalarini olish
+      description: "owner_id bo'yicha faol (state > 0) kartalar ro'yxatini qaytaradi."
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Kartalar ro'yxati muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        '401':
+          description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
+
+  # -----------------------------------------------------------------
+  # USER: Sotuvchining balansi va garov miqdori
+  # -----------------------------------------------------------------
+  /v1/mobile/user/balance:
+    get:
+      tags:
+        - User
+      summary: Foydalanuvchi balansini olish
+      description: "Sotuvchining joriy saldo va garov (bail) summalarini qaytaradi."
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Balans ma'lumotlari muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Balance'
+        '401':
+          description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
+
+  # -----------------------------------------------------------------
+  # USER: Mahsulotlar bo'yicha foydalanuvchi izohlari
+  # -----------------------------------------------------------------
+  /v1/mobile/user/comments:
+    get:
+      tags:
+        - User
+      summary: Mahsulot izohlari ro'yxatini olish
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Izohlar muvaffaqiyatli yuklandi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProductComment'
+        '401':
+          description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
+
+  # -----------------------------------------------------------------
   # CONTENT: Mobil ilova uchun bannerlar ro'yxati
   # -----------------------------------------------------------------
   /v1/mobile/banners:
@@ -1211,3 +1300,87 @@ components:
         note:
           type: string
           nullable: true
+
+    # Foydalanuvchi bank kartasi modeli
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        card_number:
+          type: string
+          example: "8600140253289582"
+        card_life_time:
+          type: string
+          example: "14/12"
+          description: "Karta amal qilish muddati (MM/YY)"
+        card_name:
+          type: string
+          example: "Asia"
+        owner_id:
+          type: integer
+          example: 3
+        status:
+          type: string
+          enum: [CONFIRMED, NOT_CONFIRMED]
+          example: "NOT_CONFIRMED"
+        active_card_type:
+          type: string
+          nullable: true
+          example: null
+        active_card_image:
+          type: string
+          nullable: true
+          example: null
+        balance:
+          type: number
+          format: double
+          nullable: true
+          example: null
+
+    # Sotuvchining balansi modeli
+    Balance:
+      type: object
+      properties:
+        saldo:
+          type: integer
+          example: 1500
+          description: "Sotuvchining joriy balansi (saldo)"
+        bail:
+          type: integer
+          example: 0
+          description: "Garov (bail) sifatida ushlab turilgan mablag'"
+
+    # Foydalanuvchining o'z izohlari modeli
+    UserProductComment:
+      type: object
+      required:
+        - id
+        - buyer_tin
+        - rating
+        - product_id
+      properties:
+        id:
+          type: integer
+          description: Izohning unikal ID raqami
+          example: 689071
+        buyer_tin:
+          type: integer
+          format: int64
+          description: Xaridorning STIR raqami (TIN)
+          example: 32602902620035
+        rating:
+          type: integer
+          description: Berilgan baho (1 dan 6 gacha)
+          minimum: 1
+          maximum: 6
+          example: 5
+        note:
+          type: string
+          description: Foydalanuvchi qoldirgan matnli sharh
+          example: "zo'r mahsulot!"
+        product_id:
+          type: integer
+          description: Sharh yozilgan mahsulotning ID raqami
+          example: 686001
