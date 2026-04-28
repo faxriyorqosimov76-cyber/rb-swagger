@@ -69,6 +69,22 @@ paths:
           description: Serverdagi ichki xatolik
 
   # -----------------------------------------------------------------
+  # CATEGORIES: Ierarxik daraxt ko'rinishidagi kategoriyalar (v2)
+  # -----------------------------------------------------------------
+  /v2/mobile/product/categories-tree:
+    get:
+      tags:
+        - Categories
+      summary: Mahsulot kategoriyalari daraxtini olish (v2)
+      responses:
+        '200':
+          description: Muvaffaqiyatli javob
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # -----------------------------------------------------------------
   # CATEGORIES: Ochiq (Public) kategoriyalar ro'yxati
   # -----------------------------------------------------------------
   /v1/public/product/categories:
@@ -489,6 +505,30 @@ components:
 
   schemas:
 
+    # Umumiy javob modeli (v2)
+    ApiResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "28.04.2026 10:37:58"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+
     # Mahsulot kategoriyasi modeli (Daraxt ko'rinishi uchun)
     Category:
       type: object
@@ -496,16 +536,16 @@ components:
         id:
           type: integer
           description: Kategoriyaning unikal IDsi
-          example: 543
+          example: 121102
         parent_id:
           type: integer
           nullable: true
           description: Otasining IDsi (eng yuqori sath bo'lsa 0 yoki null)
-          example: 101
+          example: 1211
         name:
           type: string
           description: Kategoriyaning nomi
-          example: "Erkaklar kiyimlari"
+          example: "Chorva mollari"
         has_children:
           type: boolean
           description: Ichida yana sub-kategoriyalar bor yoki yo'qligi
@@ -514,6 +554,15 @@ components:
           type: integer
           description: Kategoriya va uning barcha quyi tizimidagi jami faol mahsulotlar soni
           example: 125
+        level:
+          type: integer
+          description: Kategoriya sathi (v2 uchun)
+          example: 1
+        children:
+          type: array
+          description: Quyi sathi kategoriyalari (v2 uchun rekursiv)
+          items:
+            $ref: '#/components/schemas/Category'
 
     # Ochiq kategoriya modeli (Public API uchun)
     PublicCategory:

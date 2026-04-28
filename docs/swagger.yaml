@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: Category Tree API
+  description: >
+    Ushbu API mahsulot kategoriyalarini ierarxik ko'rinishda olish uchun mo'ljallangan. 
+    Lazy Loading tamoyili asosida ishlaydi va har bir kategoriya uchun uning barcha 
+    avlodlaridagi jami mahsulotlar sonini hisoblab beradi.
+  version: 1.0.0
+
+# 1. Guruh sarlavhasini shu yerda aniqlaymiz
+tags:
+  - name: Categories
+    description: Mahsulot kategoriyalari bilan ishlash bo'limi
+
+servers:
+  - url: https://api.cabinet.smart-market.uz/api/
+    description: Asosiy ishchi server
+
+paths:
+  /categories:
+    get:
+      # 2. Endpointni shu guruhga biriktiramiz
+      tags:
+        - Categories
+      summary: Kategoriyalar ro'yxatini olish (Lazy Loading)
+      description: >
+        `parent_id` yuborilsa, o'sha kategoriyaning ichidagi child-kategoriyalarni qaytaradi. 
+        Agar yuborilmasa yoki 0 yuborilsa, eng yuqori (Root) sathni qaytaradi.
+      parameters:
+        - name: parent_id
+          in: query
+          description: Yuqori sath kategoriyasining ID raqami.
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 101
+      responses:
+        '200':
+          description: Muvaffaqiyatli natija
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '400':
+          description: Noto'g'ri so'rov parametrlari
+        '500':
+          description: Serverdagi ichki xatolik
+
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Kategoriyaning unikal IDsi
+          example: 543
+        parent_id:
+          type: integer
+          nullable: true
+          description: Otasining IDsi (eng yuqori sath bo'lsa 0 yoki null)
+          example: 101
+        name:
+          type: string
+          description: Kategoriyaning nomi
+          example: "Erkaklar kiyimlari"
+        has_children:
+          type: boolean
+          description: Ichida yana sub-kategoriyalar bor yoki yo'qligi
+          example: true
+        products_count:
+          type: integer
+          description: Kategoriya va uning barcha quyi tizimidagi jami faol mahsulotlar soni
+          example: 125
