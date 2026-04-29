@@ -568,6 +568,62 @@ paths:
           description: Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)
 
   # -----------------------------------------------------------------
+  # USER: Foydalanuvchi qidiruv tarixi
+  # -----------------------------------------------------------------
+  /v1/mobile/user/search-query:
+    get:
+      tags:
+        - User
+      summary: Foydalanuvchi qidiruv tarixi ro'yxatini olish
+      description: |
+        Ushbu endpoint avtorizatsiyadan o'tgan foydalanuvchining oxirgi qidirgan so'rovlarini 
+        `created_at` bo'yicha kamayish tartibida qaytaradi.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Ma'lumotlar muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistoryResponse'
+        '401':
+          description: Token xato yoki muddati o'tgan (Unauthorized)
+    post:
+      tags:
+        - User
+      summary: Yangi qidiruv so'rovini saqlash
+      description: |
+        Foydalanuvchi qidiruv amalga oshirganda ushbu endpointga so'rov yuboriladi. 
+        Agar so'rov avval mavjud bo'lsa, uning vaqti yangilanadi (upsert).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query_text
+              properties:
+                query_text:
+                  type: string
+                  description: Qidirilayotgan mahsulot yoki xizmat nomi
+                  example: "Iphone 16 Pro Max"
+      responses:
+        '200':
+          description: Muvaffaqiyatli saqlandi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchCreateResponse'
+        '400':
+          description: Noto'g'ri so'rov formati
+        '401':
+          description: Avtorizatsiya xatosi
+
+  # -----------------------------------------------------------------
   # CONTENT: Mobil ilova uchun bannerlar ro'yxati
   # -----------------------------------------------------------------
   /v1/mobile/banners:
@@ -1384,3 +1440,71 @@ components:
           type: integer
           description: Sharh yozilgan mahsulotning ID raqami
           example: 686001
+
+    SearchHistoryResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "29.04.2026 11:01:51"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: array
+          description: Qidiruv so'rovlari massivi
+          items:
+            $ref: '#/components/schemas/SearchQueryItem'
+        response:
+          type: string
+          nullable: true
+
+    SearchQueryItem:
+      type: object
+      properties:
+        query_text:
+          type: string
+          description: Foydalanuvchi yozgan qidiruv so'zi
+          example: "iphone 16 pro max"
+        created_at:
+          type: string
+          description: Qidiruv amalga oshirilgan vaqt (DD.MM.YYYY HH:MM:SS)
+          example: "29.04.2026 10:56:15"
+
+    SearchCreateResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "29.04.2026 10:56:15"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: Saqlangan qidiruv yozuvining ID raqami
+              example: 1
+        response:
+          type: string
+          nullable: true
