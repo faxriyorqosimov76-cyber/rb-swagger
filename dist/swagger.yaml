@@ -23,6 +23,8 @@ tags:
     description: Reklama va axborot kontentlari (Bannerlar va h.k.)
   - name: Orders
     description: Xaridor buyurtmalari bilan ishlash bo'limi
+  - name: Card
+    description: Foydalanuvchi bank kartalarini boshqarish bo'limi
 
 # =================================================================
 # 2. SERVERS (Server manzillari)
@@ -691,6 +693,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderResponse'
+
+  # -----------------------------------------------------------------
+  # CARD: Foydalanuvchi bank kartalarini boshqarish
+  # -----------------------------------------------------------------
+  /v1/mobile/card:
+    post:
+      summary: Yangi karta qo'shish
+      description: Foydalanuvchining bank kartasini tizimga bog'lash uchun so'rov.
+      tags:
+        - Card
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - card_number
+                - card_life_time
+                - mobile_phone
+              properties:
+                card_number:
+                  type: string
+                  description: Karta raqami (16 ta raqam)
+                  example: "8600123456789012"
+                card_life_time:
+                  type: string
+                  description: Kartaning amal qilish muddati (MM/YY)
+                  example: "12/28"
+                mobile_phone:
+                  type: string
+                  description: Kartaga bog'langan telefon raqami
+                  example: "998901234567"
+                card_name:
+                  type: string
+                  description: Kartaga berilgan nom (Masalan, "Asosiy karta")
+                  example: "My Visa"
+                active_card_type:
+                  type: string
+                  description: "Karta turi (1: Uzcard/Humo, 2: Visa/Mastercard)"
+                  enum: ["1", "2"]
+                  example: "1"
+                active_card_image:
+                  type: string
+                  description: Karta dizayni uchun rasm URL manzili
+                  example: "https://cdn.smart-market.uz/cards/uzcard_gold.png"
+      responses:
+        '200':
+          description: Karta muvaffaqiyatli qo'shildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardActionResponse'
+        '400':
+          description: Ma'lumotlar noto'g'ri yuborilgan
+        '401':
+          description: Avtorizatsiya xatosi
+    delete:
+      summary: Kartani butunlay o'chirish
+      description: |
+        Berilgan ID bo'yicha kartani ma'lumotlar bazasidan butunlay o'chirib tashlaydi.
+      tags:
+        - Card
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                  description: O'chiriladigan karta ID-si
+                  example: 45
+      responses:
+        '200':
+          description: Karta bazadan muvaffaqiyatli o'chirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDeleteResponse'
+        '401':
+          description: Avtorizatsiya xatosi
+        '404':
+          description: Karta topilmadi (ID noto'g'ri)
 
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
@@ -1505,6 +1598,66 @@ components:
               type: integer
               description: Saqlangan qidiruv yozuvining ID raqami
               example: 1
+        response:
+          type: string
+          nullable: true
+
+    CardDeleteResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+          example: "Karta muvaffaqiyatli o'chirildi"
+        timestamp:
+          type: string
+          example: "29.04.2026 11:25:00"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: O'chirilgan karta ID-si
+              example: 45
+        response:
+          type: string
+          nullable: true
+
+    CardActionResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+          example: "Karta muvaffaqiyatli saqlandi"
+        timestamp:
+          type: string
+          example: "29.04.2026 12:15:42"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: Yangi yaratilgan karta ID-si
+              example: 102
         response:
           type: string
           nullable: true
