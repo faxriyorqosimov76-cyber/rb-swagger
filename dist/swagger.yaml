@@ -25,6 +25,8 @@ tags:
     description: Xaridor buyurtmalari bilan ishlash bo'limi
   - name: Card
     description: Foydalanuvchi bank kartalarini boshqarish bo'limi
+  - name: Sessions
+    description: Foydalanuvchi qurilmalari va faol seanslarini boshqarish bo'limi
 
 # =================================================================
 # 2. SERVERS (Server manzillari)
@@ -784,6 +786,111 @@ paths:
           description: Avtorizatsiya xatosi
         '404':
           description: Karta topilmadi (ID noto'g'ri)
+
+  # -----------------------------------------------------------------
+  # SESSIONS: Faol qurilmalar (seanslar) ro'yxati
+  # -----------------------------------------------------------------
+  /v1/mobile/user/active-devices:
+    get:
+      summary: Faol qurilmalar (seanslar) ro'yxatini olish
+      description: Foydalanuvchining hozirgi vaqtda tizimga kirib turgan barcha qurilmalari ro'yxatini qaytaradi.
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Faol seanslar muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveDevicesResponse'
+        '401':
+          description: Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)
+
+  /v1/mobile/user/active-devices/{id}:
+    delete:
+      summary: Tanlangan seansni yakunlash
+      description: |
+        Berilgan ID bo'yicha qurilma seansini faolsizlantiradi. 
+        Bu foydalanuvchini o'sha qurilmada tizimdan chiqarib yuboradi.
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Yakunlanishi kerak bo'lgan seans (token) ID-si
+          schema:
+            type: integer
+            format: int64
+            example: 1254
+      responses:
+        '200':
+          description: Seans muvaffaqiyatli yakunlandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Seans yakunlandi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1254
+        '401':
+          description: Avtorizatsiya xatosi
+        '404':
+          description: Seans topilmadi
+
+  /v1/mobile/user/inactive/other-devices:
+    put:
+      summary: Boshqa barcha sessiyalarni yakunlash
+      description: |
+        Ushbu endpoint joriy foydalanuvchining boshqa barcha qurilmalardagi 
+        faol sessiyalarini tugatadi (inactive holatga o'tkazadi).
+      tags:
+        - Sessions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Muvaffaqiyatli bajarildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Barcha boshqa qurilmalar tizimdan chiqarildi."
+        '401':
+          description: Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server xatosi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
@@ -1661,3 +1768,73 @@ components:
         response:
           type: string
           nullable: true
+
+    ActiveDevicesResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "29.04.2026 14:48:31"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceItem'
+        response:
+          type: string
+          nullable: true
+
+    DeviceItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Seansning unikal ID-si
+          example: 1254
+        token:
+          type: string
+          description: Qurilmaga tegishli token (xavfsizlik yuzasidan maskalangan bo'lishi mumkin)
+          example: "5eeeee1d...9d874989"
+        last_activity_at:
+          type: string
+          description: Oxirgi faollik vaqti
+          example: "29.04.2026 11:01:51"
+        last_login_at:
+          type: string
+          description: Tizimga kirilgan vaqt
+          example: "28.04.2026 09:30:00"
+        user_agent:
+          type: string
+          description: Qurilma va brauzer haqida ma'lumot
+          example: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)"
+        user_id:
+          type: integer
+          example: 987
+        last_ip_address:
+          type: string
+          description: Oxirgi foydalanilgan IP manzil
+          example: "213.230.125.11"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error_code:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: "Sizda ushbu amalni bajarish uchun ruxsat yo'q."
