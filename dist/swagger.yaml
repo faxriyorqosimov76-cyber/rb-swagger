@@ -448,6 +448,80 @@ paths:
                 $ref: '#/components/schemas/ProductBulkResponse'
 
   # -----------------------------------------------------------------
+  # USER: Foydalanuvchi profili va manzillarini yangilash
+  # -----------------------------------------------------------------
+  /v2/mobile/user:
+    put:
+      tags:
+        - User
+      summary: "Foydalanuvchi profili va manzillarini yangilash"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                mobile_phone:
+                  type: string
+                telegram_id:
+                  type: string
+                email:
+                  type: string
+                region_id:
+                  type: integer
+                district_id:
+                  type: integer
+                message_type:
+                  type: string
+                  description: "Misol: 'sms,telegram,email', 'telegram', 'email' yoki bo'sh string"
+                insert_address:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      region_id:
+                        type: integer
+                      district_id:
+                        type: integer
+                      address:
+                        type: string
+                update_address:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+                        description: "Qaysi manzilni yangilashni bildirish uchun id kerak"
+                      state:
+                        type: integer
+                      region_id:
+                        type: integer
+                      district_id:
+                        type: integer
+                      address:
+                        type: string
+      x-aliases:
+        - name: update_users
+          handler: sql_update
+        - name: add_addresses
+          handler: sql_bulk_insert
+        - name: update_address
+          handler: sql_batch_update
+      responses:
+        '200':
+          description: "Muvaffaqiyatli yangilandi"
+        '401':
+          description: "Avtorizatsiya xatosi (Token eskirgan yoki noto'g'ri)"
+
+  # -----------------------------------------------------------------
   # USER: Foydalanuvchi ma'lumotlarini olish
   # -----------------------------------------------------------------
   /v2/mobile/user/info:
@@ -891,6 +965,141 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  # -----------------------------------------------------------------
+  # TENDERS: Tenderlar
+  # -----------------------------------------------------------------
+  /v1/mobile/tenders:
+    get:
+      tags:
+        - Tenders
+      summary: "Tender bo'yicha batafsil ma'lumotlarni olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: "Tender raqami (num)"
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    application_id:
+                      type: integer
+                    id:
+                      type: integer
+                      description: "Tenderning raqami (num)"
+                    status:
+                      type: string
+                      description: "Tender holati: 'ACTIVE' yoki 'FINISHED'"
+                    end_at:
+                      type: string
+                      example: "2024-05-20 15:30:00"
+                    sever_time:
+                      type: string
+                      description: "Serverning joriy vaqti"
+                    offers:
+                      type: integer
+                      description: "Takliflar soni"
+                    products:
+                      type: array
+                      description: "Tenderdagi mahsulotlar ro'yxati (JSON massiv)"
+                      items:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                          name:
+                            type: string
+                          unit:
+                            type: string
+                          photo:
+                            type: string
+                    offer_price:
+                      type: number
+                    price:
+                      type: number
+                    difference:
+                      type: number
+                      description: "Dastlabki narx va taklif qilingan narx o'rtasidagi farq"
+      x-aliases:
+        - name: get_tender_details
+          handler: sql_select
+
+  /v1/mobile/tender:
+    get:
+      tags:
+        - Tenders
+      summary: "Tender bo'yicha batafsil ma'lumotlarni olish (Mobile)"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: "Tender raqami (num)"
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    application_id:
+                      type: integer
+                    id:
+                      type: integer
+                      description: "Tenderning raqami (num)"
+                    status:
+                      type: string
+                      description: "Tender holati: 'ACTIVE' yoki 'FINISHED'"
+                    end_at:
+                      type: string
+                      example: "2024-05-20 15:30:00"
+                    sever_time:
+                      type: string
+                      description: "Serverning joriy vaqti"
+                    offers:
+                      type: integer
+                      description: "Takliflar soni"
+                    products:
+                      type: array
+                      description: "Tenderdagi mahsulotlar ro'yxati"
+                      items:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                          name:
+                            type: string
+                          unit:
+                            type: string
+                          photo:
+                            type: string
+                    offer_price:
+                      type: number
+                    price:
+                      type: number
+                    difference:
+                      type: number
+                      description: "Dastlabki narx va taklif qilingan narx o'rtasidagi farq"
+      x-aliases:
+        - name: get_tender_details
+          handler: sql_select
 
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
