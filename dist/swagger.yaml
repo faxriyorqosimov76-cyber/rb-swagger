@@ -23,10 +23,18 @@ tags:
     description: Reklama va axborot kontentlari (Bannerlar va h.k.)
   - name: Orders
     description: Xaridor buyurtmalari bilan ishlash bo'limi
+  - name: Bank Credit
+    description: Bank krediti orqali buyurtma berish endpointlari
+  - name: Family Credit
+    description: Oilaviy kredit orqali buyurtma berish endpointlari
+  - name: Mahalla Sudo
+    description: Online Mahalla Sudo orqali buyurtma berish endpointlari
   - name: Card
     description: Foydalanuvchi bank kartalarini boshqarish bo'limi
   - name: Sessions
     description: Foydalanuvchi qurilmalari va faol seanslarini boshqarish bo'limi
+  - name: Regions
+    description: Regionlar va tumanlar ma'lumotnomasi
 
 # =================================================================
 # 2. SERVERS (Server manzillari)
@@ -702,6 +710,51 @@ paths:
           description: Avtorizatsiya xatosi
 
   # -----------------------------------------------------------------
+  # USER: Hududlar va tumanlar ro'yxatini olish
+  # -----------------------------------------------------------------
+  /v2/mobile/regions:
+    get:
+      tags:
+        - Regions
+      summary: Hududlar va ularga tegishli tumanlar ro'yxatini olish
+      description: Tizimdagi barcha regionlar va har bir regionga tegishli tumanlar ro'yxatini qaytaradi.
+      responses:
+        '200':
+          description: Hududlar ro'yxati muvaffaqiyatli qaytarildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionsResponse'
+              example:
+                error: null
+                message: null
+                timestamp: "04.05.2026 155816"
+                status: 200
+                path: null
+                data:
+                  - id: 3
+                    name: "Андижон"
+                    districts:
+                      - id: 301
+                        name: "Андижон ш."
+                        region_id: 3
+                      - id: 303
+                        name: "Хонобод ш."
+                        region_id: 3
+                      - id: 305
+                        name: "Қорасув ш."
+                        region_id: 3
+                      - id: 306
+                        name: "Олтинкўл т."
+                        region_id: 3
+                      - id: 307
+                        name: "Андижон т."
+                        region_id: 3
+                      - id: 308
+                        name: "Балиқчи т."
+                        region_id: 3
+
+  # -----------------------------------------------------------------
   # CONTENT: Mobil ilova uchun bannerlar ro'yxati
   # -----------------------------------------------------------------
   /v1/mobile/banners:
@@ -1101,6 +1154,62 @@ paths:
         - name: get_tender_details
           handler: sql_select
 
+  # -----------------------------------------------------------------
+  # ORDERS: Bank krediti orqali buyurtma berish
+  # -----------------------------------------------------------------
+  /v1/mobile/bank-credit/order:
+    post:
+      summary: Bank krediti orqali buyurtma berish
+      tags:
+        - Bank Credit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPayload'
+      responses:
+        '200':
+          description: Buyurtma muvaffaqiyatli yaratildi
+        '400':
+          description: Noto'g'ri ma'lumot yuborildi
+
+  # -----------------------------------------------------------------
+  # ORDERS: Oilaviy kredit orqali buyurtma berish
+  # -----------------------------------------------------------------
+  /v1/mobile/family-credit/order:
+    post:
+      summary: Oilaviy kredit orqali buyurtma berish
+      tags:
+        - Family Credit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPayload'
+      responses:
+        '200':
+          description: Buyurtma muvaffaqiyatli yaratildi
+
+  # -----------------------------------------------------------------
+  # ORDERS: Online Mahalla Sudo tizimi orqali buyurtma berish
+  # -----------------------------------------------------------------
+  /v1/mobile/online-mahalla-sudo/order:
+    post:
+      summary: Online Mahalla Sudo tizimi orqali buyurtma berish
+      tags:
+        - Mahalla Sudo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPayload'
+      responses:
+        '200':
+          description: Buyurtma muvaffaqiyatli yaratildi
+
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
 # =================================================================
@@ -1111,6 +1220,45 @@ components:
       scheme: bearer
 
   schemas:
+
+    OrderPayload:
+      type: object
+      required:
+        - tin
+        - application_id
+        - products
+      properties:
+        tin:
+          type: string
+          description: "STIR (TIN) raqami"
+          example: "123456789"
+        application_id:
+          type: integer
+          description: "Ariza identifikatori"
+          example: 5501
+        products:
+          type: array
+          description: "Sotib olinayotgan mahsulotlar ro'yxati"
+          items:
+            type: object
+            required:
+              - amount
+              - num
+              - product_id
+            properties:
+              amount:
+                type: number
+                format: float
+                description: "Mahsulot narxi/summasi"
+                example: 1500000.00
+              num:
+                type: integer
+                description: "Mahsulot soni"
+                example: 2
+              product_id:
+                type: string
+                description: "Mahsulotning ID raqami"
+                example: "PROD-9982"
 
     # Umumiy javob modeli (v2)
     ApiResponse:
@@ -2047,3 +2195,53 @@ components:
         message:
           type: string
           example: "Sizda ushbu amalni bajarish uchun ruxsat yo'q."
+
+    RegionDistrict:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 301
+        name:
+          type: string
+          example: "Андижон ш."
+        region_id:
+          type: integer
+          example: 3
+
+    Region:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: "Андижон"
+        districts:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionDistrict'
+
+    RegionsResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          example: "04.05.2026 155816"
+        status:
+          type: integer
+          example: 200
+        path:
+          type: string
+          nullable: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
