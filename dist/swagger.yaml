@@ -13,7 +13,7 @@ info:
 # 1. TAGS (Guruhlar)
 # =================================================================
 tags:
-  - name: Categories
+  - name: Categories,
     description: Mahsulot kategoriyalari bilan ishlash bo'limi (Asosiy va Ochiq kategoriyalar)
   - name: Products
     description: Mahsulotlar bilan ishlash bo'limi
@@ -37,6 +37,8 @@ tags:
     description: Regionlar va tumanlar ma'lumotnomasi
   - name: Tenders
     description: Tender mahsulotlari va tender ma'lumotlari bilan ishlash bo'limi
+  - name: Seller
+    description: Ta'minotchi (Sotuvchi) login qismi va sotuvchiga oid endpointlar
 
 # =================================================================
 # 2. SERVERS (Server manzillari)
@@ -456,6 +458,155 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductBulkResponse'
+
+
+ # -----------------------------------------------------------------
+  # USER: login qismi
+  # -----------------------------------------------------------------
+  /v2/mobile/login:
+    post:
+      tags:
+        - User
+      summary: "Foydalanuvchi login qismi"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: "Ta'minotchi username (login)"
+          schema:
+            type: string
+        - name: password
+          in: query
+          required: true
+          description: "Ta'minotchi paroli"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: "Ta'minotchi uchun yaratilgan JWT token"
+                    example: "d9f8a7b6-4c3d-4e2f-9a1b-5c6d7e8f9a0b"
+                  refresh_token:
+                    type: string
+                    description: "Tokenni yangilash uchun refresh token"
+                    example: "d9f8a7b6-4c3d-4e2f-9a1b-5c6d7e8f9a0b"
+        '401':
+          description: "Incorrect username or password"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # USER: Eimzo tizimi bilan login
+  # ----------------------------------------------------------------- 
+  /v1/mobile/auth/e-imzo/login:
+    post:
+      tags:
+        - User
+      summary: "Foydalanuvchi Eimzo tizimi bilan login"
+      parameters:
+        - name: useragent
+          in: header
+          required: true
+          description: "Foydalanuvchi agenti"
+          schema:
+            type: string
+        - name: appversioncode
+          in: header
+          required: true
+          description: "Ilova versiyasi (version code)"
+          schema:
+            type: string
+        - name: appversionname
+          in: header
+          required: true
+          description: "Ilova versiyasi (version name)"
+          schema:
+            type: string
+        - name: acceptlanguage
+          in: header
+          required: true
+          description: "Qabul qilinadigan til kodi (uz, ru, la)"
+          schema:
+            type: string
+            enum: [uz, ru, la]
+        - name: deviceid
+          in: header    
+          required: true
+          description: "Qurilmaning unikal identifikatori"
+          schema:
+            type: string
+        - name: devicename
+          in: header
+          required: true
+          description: "Qurilmaning nomi"
+          schema:
+            type: string
+        - name: devicemanufacturer
+          in: header
+          required: true
+          description: "Qurilmaning ishlab chiqaruvchisi"
+          schema:
+            type: string
+        - name: devicemodel
+          in: header
+          required: true
+          description: "Qurilmaning modeli"
+          schema:
+            type: string
+        - name: androidos 
+          in: header
+          required: true
+          description: "Android operatsion tizimining versiyasi"
+          schema:
+            type: string
+        - name: nightmode
+          in: header
+          required: true
+          description: "Tungi rejim holati (true yoki false)"
+          schema:
+            type: boolean
+        - name: sign
+          in: query
+          required: true
+          description: "Eimzo tizimidan olingan imzo (signature)"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      userInfo:
+                        type: object
+                    required:
+                      - token
+                  insert_mobile:
+                    type: object
+        '401':
+          description: "Invalid Eimzo token"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '500':
+          description: "Server xatosi"
 
   # -----------------------------------------------------------------
   # USER: Foydalanuvchi profili va manzillarini yangilash
@@ -1289,6 +1440,1326 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApplicationResponse'
 
+
+
+ 
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchi balansini olish
+  # ----------------------------------------------------------------- 
+  /v1/mobile/seller/balance:
+    get:
+      tags:
+        - Seller
+      summary: "Ta'minotchi balansini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Balans muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      saldo:
+                        type: number
+                        example: 1500000.00
+                        description: "Ta'minotchining erkin balansi"
+                      bail:
+                        type: number
+                        example: 500000.00
+                        description: "Ta'minotchining jarayondagi mablag'i"
+                      blocked:
+                        type: number
+                        example: 200000.00
+                        description: "Ta'minotchining bloklangan mablag'i"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchi statistikasini olish
+  # ----------------------------------------------------------------- 
+  /v1/mobile/seller/statistics:  
+    get:
+      tags:
+        - Seller
+      summary: "Ta'minotchi statistikasini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Statistika muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      monthly_income:
+                        type: number
+                        example: 5000000.00
+                        description: "Ta'minotchining oylik tushumi"
+                      today_orders:
+                        type: integer
+                        example: 15
+                        description: "Bugungi buyurtmalar soni"
+                      total_orders:
+                        type: integer
+                        example: 250
+                        description: "Umumiy buyurtmalar soni"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500':
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Buyurtmalarni olish
+  # ----------------------------------------------------------------- 
+  /v1/mobile/seller/orders:
+    get:
+      tags:
+        - Seller
+      summary: "Ta'minotchi buyurtmalarini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: payment_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['ALL', 'FAMILY_CREDIT', 'TRANSFER_MONEY', 'RELIABLE_PAYMENT', 'INSTALLMENT_PAYMENT', 'CASH', 'InTend', 'BRB', 'SUDO_MAHALLA', 'TDA', 'BANK_CREDIT']
+            example: "FAMILY_CREDIT"
+        - name: bdate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2024-05-01"
+        - edate:
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2024-05-31"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Buyurtmalar muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        doc_num:
+                          type: integer
+                          description: "Buyurtma ID-si"
+                          example: 12345
+                        doc_date:
+                          type: string
+                          description: "Buyurtma sanasi"
+                          example: "2024-05-01"
+                        seller_tin:
+                          type: number
+                          description: "Ta'minotchi STIR (TIN) raqami"
+                          example: 123456789
+                        final_sum:
+                          type: number
+                          description: "To'lov summasi"
+                          example: 150000.00
+                        amount:
+                          type: integer
+                          description: "Mahsulotlar soni"
+                          example: 2
+                        status:
+                          type: string
+                          description: "Buyurtma holati"
+                          example: "ACCEPTED"
+                        payment_type:
+                          type: string
+                          description: "To'lov turi"
+                          example: "FAMILY_CREDIT"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchi buyurtmani bekor qilish
+  # ----------------------------------------------------------------- 
+  v1/mobile/seller/order/cancel:
+    post:
+      tags:
+        - Seller
+      summary: "Ta'minotchi buyurtmani bekor qilish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          required: true
+          description: "Bekor qilinishi kerak bo'lgan buyurtmaning ID-si"
+          schema:
+            type: integer
+        - note:
+          in: query
+          required: false
+          description: "Bekor qilish sababi (ixtiyoriy)"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Buyurtma muvaffaqiyatli bekor qilindi"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Buyurtma bekor qilindi"
+                  status:
+                    type: integer
+                    example: 200
+        '400':
+          description: "Noto'g'ri so'rov formati yoki buyurtma ID-si"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '404':
+          description: "Buyurtma topilmadi (ID noto'g'ri)"
+        '500':
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Ta'minotchiga tegishli xabarlarni olish
+  # ----------------------------------------------------------------- 
+  /v1/mobile/seller/notify:
+    get:
+      tags:
+        - Seller
+      summary: "Ta'minotchiga tegishli xabarlarni olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - status:
+          in: query
+          required: false
+          description: "Xabarlar holati bo'yicha filtr (masalan: 'UNREAD' yoki 'READ' yoki 'all')"
+          schema:
+            type: string
+            enum: ['UNREAD', 'READ', 'all']
+            example: "UNREAD"
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Xabarlar muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: "Xabar ID-si"
+                          example: 101
+                        title:
+                          type: string
+                          description: "Xabar sarlavhasi"
+                          example: "Buyurtma qabul qilindi"
+                        note:
+                          type: string
+                          description: "Xabar matni"
+                          example: "Sizning buyurtmangiz qabul qilindi va tez orada yetkazib beriladi."
+                        state:
+                          type: string
+                          description: "Xabar holati ('UNREAD' yoki 'READ')"
+                          example: "UNREAD"
+                        send_date:
+                          type: string
+                          description: "Xabar yaratilgan vaqt"
+                          example: "01.01.2026 14:30"
+                        link:
+                          type: string
+                          description: "Xabar bilan bog'liq sahifaga o'tish havolasi (URL)"
+                          example: "https://mobile.smart-market.uz/orders/12345"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500':
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Tenderlarni olish
+  # -----------------------------------------------------------------
+  v1/mobile/seller/tenders:
+    get:
+      tags:
+        - Seller
+      summary: "Ta'minotchi tenderlarini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          description: "Tender holati bo'yicha filtr (masalan: 'ACTIVE' yoki 'FINISHED')"
+          schema:
+            type: string
+            enum: ['ALL', 'ACTIVE', 'FINISHED', 'ENDING_SOON']
+            example: "ACTIVE" 
+        - search:
+          in: query
+          required: false
+          description: "Tender raqami yoki Xaridor ismi bo'yicha qidirish"
+          schema:
+            type: string
+            example: "323423"
+        - region:
+          in: query
+          required: false
+          description: "Region ID-si bo'yicha filtr"
+          schema:
+            type: integer
+            example: 12
+        - district:
+          in: query
+          required: false
+          description: "Tuman ID-si bo'yicha filtr"
+          schema:
+            type: integer
+            example: 1201
+        - start_date:
+          in: query
+          required: false
+          description: "Boshlanish sanasi bo'yicha filtr (YYYY-MM-DD formatida)"
+          schema:
+            type: string
+            format: date
+            example: "2024-05-01"
+        - end_date:
+          in: query
+          required: false
+          description: "Tugash sanasi bo'yicha filtr (YYYY-MM-DD formatida)"
+          schema:
+            type: string
+            format: date
+            example: "2024-05-31"
+        - name: page
+          in: query
+          required: false
+          description: "Sahifa raqami (pagination uchun)"
+          schema:
+            type: integer
+            example: 1
+        - name: page_size
+          in: query 
+          required: false
+          description: "Sahifadagi elementlar soni (pagination uchun)"
+          schema:
+            type: integer
+            example: 10  
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Tenderlar muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties: 
+                      server_time:
+                        type: time
+                        description: "Serverning joriy vaqti"
+                        example: "2024-05-15 12:00:00"
+                      stats:
+                        type: object
+                        properties:
+                          ending_soon:
+                            type: integer
+                            description: "Tez orada tugaydigan tenderlar soni"
+                            example: 50
+                          active:
+                            type: integer
+                            description: "Faol tenderlar soni"
+                            example: 30
+                          finished:
+                            type: integer
+                            description: "Tugagan tenderlar soni"
+                            example: 20
+                          total:
+                            type: integer
+                            description: "Umumiy tenderlar soni"
+                            example: 100
+                      tenders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              description: "Tenderning ariza identifikatori"
+                              example: 5501
+                            tender_num:
+                              type: integer
+                              description: "Tender raqami"
+                              example: 67890
+                            status:
+                              type: string
+                              description: "Tender holati ('ACTIVE' yoki 'FINISHED')"
+                              example: "ACTIVE"
+                            buyer:
+                              type: string
+                              description: "Xaridor ismi"
+                              example: "ABC Company"
+                            offers1:
+                              type: integer
+                              description: "Takliflar soni"
+                              example: 5
+                            products_count:
+                              type: integer
+                              description: "Tenderdagi mahsulotlar soni"
+                              example: 3
+                            sent_at:
+                              type: string
+                              description: "Tenderning yuborilgan sanasi"
+                              example: "2024-05-10 14:30:00"
+                            end_at:
+                              type: string
+                              description: "Tenderning tugash sanasi"
+                              example: "2024-05-20 15:30:00"
+                            time_left:
+                              type: string
+                              description: "Tenderning tugashiga qolgani vaqt (faol tenderlar uchun)"
+                              example: "5 kun 3 soat"
+                            total_price:
+                              type: number
+                              description: "Tenderdagi barcha mahsulotlarning umumiy narxi"
+                              example: 2500000.00
+                            address:
+                              type: string
+                              description: "Yetkazib berish manzili"
+                              example: "Toshkent, Chilonzor tumani, Amir Temur ko'chasi, 12-uy"
+                            winner_org_name:
+                              type: string
+                              description: "G'olib tashkilot nomi (tugagan tenderlar uchun)"
+                              example: "XYZ LLC"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+        '500':
+          description: "Server xatosi"
+        '503':
+          description: "Xizmat vaqtincha mavjud emas (Server band yoki texnik xizmat ko'rsatish)"
+        
+  # ----------------------------------------------------------------- 
+  # SELLER: Tenderga tegishli mahsulotlarni olish
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/tender/products:
+    get:
+      tags:
+        - Seller
+      summary: "Tenderga tegishli mahsulotlarni olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: num
+          in: query
+          required: true
+          description: "Tenderning raqami (num)"
+          schema:
+            type: integer
+            example: 67890
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tender_details:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: "Tenderning ariza identifikatori"
+                        example: 1205904
+                      tender_num:
+                        type: integer
+                        description: "Tender raqami"
+                        example: 108913
+                      applicant:
+                        type: string
+                        description: "Ariza beruvchi shaxsning to'liq ismi"
+                        example: "MANSUROVA DILDORAXON MO'YDINJONOVNA"
+                      offers:
+                        type: string
+                        description: "Tenderga berilgan takliflar soni"
+                        example: "1"
+                      sent_at:
+                        type: string
+                        description: "Ariza yuborilgan vaqt"
+                        example: "12.06.2026 15:20"
+                      end_at:
+                        type: string
+                        description: "Tender tugash vaqti"
+                        example: "15.06.2026 15:20"
+                      time_left:
+                        type: string
+                        description: "Tender tugashiga qolgani vaqt"
+                        example: "1 minut 41 soniya"
+                      address:
+                        type: string
+                        description: "Yetkazib berish manzili"
+                        example: "Андижон вилояти Балиқчи тумани"
+                      server_time:
+                        type: string
+                        description: "Serverning joriy vaqti"
+                        example: "15.06.2026 151846"
+                      is_finished:
+                        type: boolean
+                        description: "Tender tugaganligi"
+                        example: false
+                      is_offer_given:
+                        type: boolean
+                        description: "Taklif berilganligi"
+                        example: false
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tender_id:
+                          type: integer
+                          description: "Tenderning identifikatori"
+                          example: 70171
+                        application_id:
+                          type: integer
+                          description: "Ariza identifikatori"
+                          example: 1205904
+                        tender_num:
+                          type: integer
+                          description: "Tender raqami"
+                          example: 108913
+                        buyer_product_id:
+                          type: integer
+                          description: "Sotuvchi mahsuloti identifikatori"
+                          example: 1696974
+                        mxik_code:
+                          type: string
+                          description: "Mahsulotning MXIK kodi"
+                          example: "08711001001000000"
+                        product_name:
+                          type: string
+                          description: "Mahsulot nomi"
+                          example: "электромотороллер"
+                        products_amount:
+                          type: integer
+                          description: "Mahsulot miqdori"
+                          example: 1
+                        price:
+                          type: integer
+                          description: "Mahsulotning bir dona narxi"
+                          example: 10500000
+                        total_price:
+                          type: integer
+                          description: "Mahsulotning jami narxi (miqdor * narx)"
+                          example: 10500000
+                        my_offer_price:
+                          type: integer
+                          description: "Mening taklif qilgan narxim"
+                          example: 10000000
+                          nullable: true
+                        new_bid_amount:
+                          type: integer
+                          description: "Yangi taklif narxi (agar boshqa taklif berilgan bo'lsa)"
+                          nullable: true
+                        is_added:
+                          type: boolean
+                          description: "Mahsulot tenderga qo'shilgan yoki yo'qligi"
+                          example: false
+                        offers:
+                          type: string
+                          description: "Bu mahsulotga berilgan takliflar soni"
+                          example: "1"
+                        applicant:
+                          type: string
+                          description: "Ariza beruvchi shaxsning to'liq ismi"
+                          example: "MANSUROVA DILDORAXON MO'YDINJONOVNA"
+                        sent_at:
+                          type: string
+                          description: "Ariza yuborilgan vaqt"
+                          example: "12.06.2026 15:20"
+                        end_at:
+                          type: string
+                          description: "Tender tugash vaqti"
+                          example: "15.06.2026 15:20"
+                        min_offer_price:
+                          type: integer
+                          description: "Bu mahsulot uchun berilgan eng kam taklif narxi"
+                          example: 0
+                        time_left:
+                          type: string
+                          description: "Tender tugashiga qolgani vaqt"
+                          example: "1 minut 41 soniya"
+                        server_time:
+                          type: string
+                          description: "Serverning joriy vaqti"
+                          example: "15.06.2026 151846"
+                        address:
+                          type: string
+                          description: "Yetkazib berish manzili"
+                          example: "Андижон вилояти Балиқчи тумани"
+                        offer_product_id:
+                          type: integer
+                          description: "Taklif qilingan mahsulotning identifikatori (taklif berilgan bo'lsa)"
+                          nullable: true
+                        has_offer:
+                          type: boolean
+                          description: "Bu mahsulotga taklif berilgan yoki yo'qligi"
+                          example: false
+              '401':
+                description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+              '404':
+                description: "Tender topilmadi (num noto'g'ri)"  
+              '500':
+                description: "Server xatosi"
+              '503':
+                description: "Xizmat vaqtincha mavjud emas (Server band yoki texnik xizmat ko'rsatish)"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Yetkazib berish manzillarini qo'shish, (Sotuvchi yetkazib beradi tanlanganda ishlatiladi)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/deliverys:
+    post:
+      tags:
+        - Seller
+      summary: "Yetkazib berish manzillarini qo'shish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: product_id
+          in: query
+          required: true
+          description: "Tenderdagi mahsulotning identifikatori"
+          schema:
+            type: integer
+            example: 67890
+        - name: deliveries
+          in: query
+          required: false
+          description: "Yetkazib berish manzillarini ro'yxati"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: "Yetkazib berish turi"
+                  example: "DELIVERY"
+                  required: true
+                free_shipping:
+                  type: boolean
+                  description: "Bepul yetkazib berish mavjudligi"
+                  example: false
+                delivery_day:
+                  type: integer
+                  description: "Yetkazib berish kuni"
+                  example: 3
+                warehouse_id:
+                  type: integer
+                  description: "Depo identifikatori"
+                  example: 5
+                weight:
+                  type: number
+                  description: "Yuk xajmi"
+                  example: 1.5
+                width:
+                  type: number
+                  description: "Kenglik"
+                  example: 20.0
+                tall:
+                  type: number
+                  description: "Balandlik"
+                  example: 15.0
+                length:
+                  type: number
+                  description: "Uzunlik"
+                  example: 30.0
+                source_type_id:
+                  type: integer
+                  description: "Manba turi identifikatori"
+                  example: 2
+                source_send_type_id:
+                  type: integer
+                  description: "Manba yuborish turi identifikatori"
+                  example: 1
+                source_type:
+                  type: string
+                  description: "Manba turi"
+                  example: "warehouse"
+                district_id:
+                  type: integer
+                  description: "Tuman identifikatori"
+                  example: 101
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Yetkazib berish manzillari muvaffaqiyatli qo'shildi"
+                  status:
+                    type: integer
+                    example: 200
+        '400':
+          description: "Noto'g'ri so'rov formati yoki mahsulot ID-si"
+        '401':  
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '404':
+          description: "Mahsulot topilmadi (product_id noto'g'ri)"  
+        '500':
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Yetkazib berish manzillarini olish, (Sotuvchi yetkazib beradi tanlanganda ishlatiladi)
+  # -----------------------------------------------------------------  
+  v1/mobile/seller/deliverys:
+    get:
+      tags:
+        - Seller
+      summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish"  
+      security:
+        - BearerAuth: []  
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: product_id
+          in: query
+          required: true
+          description: "Tenderdagi mahsulotning identifikatori"
+          schema:
+            type: integer
+            example: 67890
+          responses: 
+          '200':  
+            description: "Muvaffaqiyatli javob"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      nullable: true
+                    message:
+                      type: string
+                      example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
+                    status:
+                      type: integer
+                      example: 200
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: "Yetkazib berish manzili identifikatori"
+                            example: 1
+                          type:
+                            type: string
+                            description: "Yetkazib berish turi"
+                            example: "DELIVERY"
+                          free_shipping:
+                            type: boolean
+                            description: "Bepul yetkazib berish mavjudligi"
+                            example: false
+                          delivery_day:
+                            type: integer
+                            description: "Yetkazib berish kuni"
+                            example: 3
+                          region_id:
+                            type: integer
+                            description: "Viloyat identifikatori"
+                            example: 10
+                          district_id:
+                            type: integer
+                            description: "Tuman identifikatori"
+                            example: 101
+          '400': 
+            description: "Noto'g'ri so'rov formati yoki mahsulot ID-si"
+          '401':  
+            description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+          '404':
+            description: "Mahsulot topilmadi (product_id noto'g'ri)"
+          '500':
+            description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Yetkazib berish manzillarini qo'shish, (Sotib oluvchi olib ketadi tanlanganda ishlatiladi)
+  # -----------------------------------------------------------------
+  v1/mobile/seller/warehouses:
+    post:
+      tags:
+        - Seller
+      summary: "Yetkazib berish manzillarini qo'shish (Sotib oluvchi olib ketadi)"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          required: false
+          description: "Manzil identifikatori (warehouse_id)"
+          schema:
+            type: integer
+            example: 67890
+        - name: name
+          in: query
+          required: true
+          description: "Manzil nomi"
+          schema:
+            type: string
+            example: "Toshkent shahri, Chilonzor tumani, Amir Temur ko'chasi, 12-uy"
+        - name: address:
+          in: query
+          required: false
+          description: "Manzil"
+          schema:
+            type: string
+            example: "12-uy"
+        - name: full_address
+          in: query
+          required: false
+          description: "To'liq manzil"
+          schema:
+            type: string
+            example: "Toshkent shahri, Chilonzor tumani, Amir Temur ko'chasi, 12-uy"
+        - name: region_id
+          in: query
+          required: true
+          description: "Viloyat identifikatori"
+          schema:
+            type: integer
+            example: 10
+        - name: district_id
+          in: query
+          required: true
+          description: "Tuman identifikatori"
+          schema:
+            type: integer
+            example: 101
+        - name: is_main
+          in: query
+          required: false
+          description: "Asosiy manzil belgilanishi (true/false)"
+          schema:
+            type: boolean
+            example: true
+        - name: location 
+          in: query
+          required: false
+          description: "Manzil koordinatalari (latitude,longitude)"
+          schema:
+            type: string
+            example: "41.2995,69.2401"
+        - name: mahalla_id
+          in: query
+          required: false
+          description: "Mahalla identifikatori (SUDO_MAHALLA to'lov turi uchun)"
+          schema:
+            type: integer
+            example: 5001
+        - name: street_name
+          in: query
+          required: false
+          description: "Ko'cha nomi (SUDO_MAHALLA to'lov turi uchun)"
+          schema:
+            type: string
+            example: "Amir Temur ko'chasi"
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Yetkazib berish manzili muvaffaqiyatli qo'shildi"
+                  status:
+                    type: integer
+                    example: 200
+        '400': 
+          description: "Noto'g'ri so'rov formati yoki manzil ID-si"
+        '401':  
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '404':
+          description: "Manzil topilmadi (id noto'g'ri)"
+        '500':
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Yetkazib berish manzillarini olish, (Sotib oluvchi olib ketadi tanlanganda ishlatiladi)
+  # -----------------------------------------------------------------
+  v1/mobile/seller/warehouses:
+    get:
+      tags:
+        - Seller
+      summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish (Sotib oluvchi olib ketadi)"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name:
+                            type: string
+                            example: "Asosiy ombor"
+                          seller_id:
+                            type: integer
+                            example: 5001
+                          address:
+                            type: string
+                            nullable: true
+                            example: "Nurхаёт ko'chasi 15"
+                          full_address:
+                            type: string
+                            nullable: true
+                            example: "Andijon viloyati, Baliqchi tumani, Nurхаёт ko'chasi 15"
+                          region_id:
+                            type: integer
+                            nullable: true
+                            example: 10
+                          district_id:
+                            type: integer
+                            nullable: true
+                            example: 101
+                          mahalla_id:
+                            type: integer
+                            nullable: true
+                            example: 1001
+                          street_name:
+                            type: string
+                            nullable: true
+                            example: "Nurхаёт"
+                          location:
+                            type: string
+                            nullable: true
+                            description: "GPS koordinatalari (GeoJSON yoki WKT)"
+                            example: "POINT(40.123 72.456)"
+                          is_main:
+                            type: boolean
+                            example: true
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2026-06-05T08:11:47"
+                          region_name:
+                            type: string
+                            nullable: true
+                            description: "Viloyat nomi (locale ga qarab)"
+                            example: "Andijon viloyati"
+                          district_name:
+                            type: string
+                            nullable: true
+                            description: "Tuman nomi (locale ga qarab)"
+                            example: "Baliqchi tumani"
+                          mahalla_name:
+                            type: string
+                            nullable: true
+                            description: "Mahalla nomi (locale ga qarab)"
+                            example: "Dungsaroy mahallasi"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':  
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500': 
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Mahsulot qo'shish
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/add/service:
+    post:
+      tags:
+        - Seller Products
+      summary: "Mahsulot qo'shish"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - category_id
+                - unit_id
+                - price
+                - amount
+              properties:
+                name_ru:
+                  type: string
+                  description: "Mahsulot nomi (rus tilida)"
+                  example: "Электромотороллер"
+                name:
+                  type: string
+                  description: "Mahsulot nomi"
+                  example: "Электромотороллер"
+                identification_code:
+                  type: string
+                  description: "Mahsulot identifikatsiya kodi (MXIK)"
+                  example: "08711001001000000"
+                category_id:
+                  type: integer
+                  description: "Kategoriya ID"
+                  example: 10
+                unit_id:
+                  type: integer
+                  description: "O'lchov birligi ID"
+                  example: 3
+                price:
+                  type: number
+                  description: "Mahsulot narxi"
+                  example: 10500000
+                amount:
+                  type: number
+                  description: "Mahsulot miqdori"
+                  example: 100
+                min_amount:
+                  type: number
+                  description: "Minimal miqdor"
+                  example: 1
+                all_sum:
+                  type: number
+                  description: "Umumiy summa"
+                  example: 1050000000
+                husbandry_type:
+                  type: string
+                  nullable: true
+                  description: "Xo'jalik turi"
+                  example: "fermer"
+                photos:
+                  type: array
+                  description: "Mahsulot rasmlari"
+                  items:
+                    type: string
+                  example: ["photo1.jpg", "photo2.jpg"]
+                video_link:
+                  type: string
+                  nullable: true
+                  description: "Video havola"
+                  example: "https://youtube.com/watch?v=xxx"
+                technical_parameters:
+                  type: string
+                  nullable: true
+                  description: "Texnik parametrlar (o'zbek tilida)"
+                  example: "Quvvat: 3kW, Tezlik: 60km/h"
+                technical_parameters_ru:
+                  type: string
+                  nullable: true
+                  description: "Texnik parametrlar (rus tilida)"
+                  example: "Мощность: 3кВт, Скорость: 60км/ч"
+                payment_types:
+                  type: array
+                  description: "To'lov turlari"
+                  items:
+                    type: string
+                  example: ["cash", "card", "transfer"]
+                region_id:
+                  type: integer
+                  nullable: true
+                  description: "Viloyat ID"
+                  example: 10
+                district_id:
+                  type: integer
+                  nullable: true
+                  description: "Tuman ID"
+                  example: 101
+                org_id:
+                  type: integer
+                  nullable: true
+                  description: "Tashkilot ID (bo'lmasa token dan olinadi)"
+                  example: 5001
+                tender_id:
+                  type: integer
+                  nullable: true
+                  description: "Tender ID (source_id)"
+                  example: 70171
+      responses:
+        '200':
+          description: "Mahsulot muvaffaqiyatli qo'shildi"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Mahsulot muvaffaqiyatli qo'shildi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    nullable: true
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':
+          description: "Autentifikatsiya xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Listdan data olish
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/lists:
+    get:
+      tags:
+        - Seller
+      summary: "Listdan data olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: type_id
+          in: query
+          required: true
+          description: "Olingan data turi"
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Data muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      nullable: true
+                      schema:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: "Data identifikatori"
+                            example: 1
+                          name1:
+                            type: string
+                          name2:
+                            type: string
+                          name3:
+                            type: string
+                          namer4:
+                            type: string
+                          val01:
+                            type: string
+        '400':
+          description: "Noto'g'ri so'rov formati yoki type parametri"
+        '401':
+          description: "Autentifikatsiya xatosi"
+
+  
+  
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
 # =================================================================
