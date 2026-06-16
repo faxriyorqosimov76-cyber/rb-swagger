@@ -13,7 +13,7 @@ info:
 # 1. TAGS (Guruhlar)
 # =================================================================
 tags:
-  - name: Categories,
+  - name: Categories
     description: Mahsulot kategoriyalari bilan ishlash bo'limi (Asosiy va Ochiq kategoriyalar)
   - name: Products
     description: Mahsulotlar bilan ishlash bo'limi
@@ -1582,7 +1582,7 @@ paths:
             type: string
             format: date
             example: "2024-05-01"
-        - edate:
+        - name: edate
           in: query
           required: false
           schema:
@@ -1659,7 +1659,7 @@ paths:
   # -----------------------------------------------------------------
   # SELLER: Ta'minotchi buyurtmani bekor qilish
   # ----------------------------------------------------------------- 
-  v1/mobile/seller/order/cancel:
+  /v1/mobile/seller/order/cancel:
     post:
       tags:
         - Seller
@@ -1679,7 +1679,7 @@ paths:
           description: "Bekor qilinishi kerak bo'lgan buyurtmaning ID-si"
           schema:
             type: integer
-        - note:
+        - name: note
           in: query
           required: false
           description: "Bekor qilish sababi (ixtiyoriy)"
@@ -1728,7 +1728,7 @@ paths:
           required: true
           schema:
             type: string
-        - status:
+        - name: status
           in: query
           required: false
           description: "Xabarlar holati bo'yicha filtr (masalan: 'UNREAD' yoki 'READ' yoki 'all')"
@@ -1790,7 +1790,7 @@ paths:
   # ----------------------------------------------------------------- 
   # SELLER: Tenderlarni olish
   # -----------------------------------------------------------------
-  v1/mobile/seller/tenders:
+  /v1/mobile/seller/tenders:
     get:
       tags:
         - Seller
@@ -1812,28 +1812,28 @@ paths:
             type: string
             enum: ['ALL', 'ACTIVE', 'FINISHED', 'ENDING_SOON']
             example: "ACTIVE" 
-        - search:
+        - name: search
           in: query
           required: false
           description: "Tender raqami yoki Xaridor ismi bo'yicha qidirish"
           schema:
             type: string
             example: "323423"
-        - region:
+        - name: region
           in: query
           required: false
           description: "Region ID-si bo'yicha filtr"
           schema:
             type: integer
             example: 12
-        - district:
+        - name: district
           in: query
           required: false
           description: "Tuman ID-si bo'yicha filtr"
           schema:
             type: integer
             example: 1201
-        - start_date:
+        - name: start_date
           in: query
           required: false
           description: "Boshlanish sanasi bo'yicha filtr (YYYY-MM-DD formatida)"
@@ -1841,7 +1841,7 @@ paths:
             type: string
             format: date
             example: "2024-05-01"
-        - end_date:
+        - name: end_date
           in: query
           required: false
           description: "Tugash sanasi bo'yicha filtr (YYYY-MM-DD formatida)"
@@ -1884,7 +1884,7 @@ paths:
                     type: object
                     properties: 
                       server_time:
-                        type: time
+                        type: string
                         description: "Serverning joriy vaqti"
                         example: "2024-05-15 12:00:00"
                       stats:
@@ -2139,17 +2139,17 @@ paths:
                           type: boolean
                           description: "Bu mahsulotga taklif berilgan yoki yo'qligi"
                           example: false
-              '401':
-                description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
-              '404':
-                description: "Tender topilmadi (num noto'g'ri)"  
-              '500':
-                description: "Server xatosi"
-              '503':
-                description: "Xizmat vaqtincha mavjud emas (Server band yoki texnik xizmat ko'rsatish)"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+        '404':
+          description: "Tender topilmadi (num noto'g'ri)"  
+        '500':
+          description: "Server xatosi"
+        '503':
+          description: "Xizmat vaqtincha mavjud emas (Server band yoki texnik xizmat ko'rsatish)"
 
   # ----------------------------------------------------------------- 
-  # SELLER: Yetkazib berish manzillarini qo'shish, (Sotuvchi yetkazib beradi tanlanganda ishlatiladi)
+  # SELLER: Yetkazib berish manzillarini qo'shish va olish, (Sotuvchi yetkazib beradi tanlanganda ishlatiladi)
   # -----------------------------------------------------------------
   /v1/mobile/seller/deliverys:
     post:
@@ -2255,11 +2255,6 @@ paths:
           description: "Mahsulot topilmadi (product_id noto'g'ri)"  
         '500':
           description: "Server xatosi"
-
-  # ----------------------------------------------------------------- 
-  # SELLER: Yetkazib berish manzillarini olish, (Sotuvchi yetkazib beradi tanlanganda ishlatiladi)
-  # -----------------------------------------------------------------  
-  v1/mobile/seller/deliverys:
     get:
       tags:
         - Seller
@@ -2280,65 +2275,65 @@ paths:
           schema:
             type: integer
             example: 67890
-          responses: 
-          '200':  
-            description: "Muvaffaqiyatli javob"
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      nullable: true
-                    message:
-                      type: string
-                      example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
-                    status:
-                      type: integer
-                      example: 200
-                    data:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                            description: "Yetkazib berish manzili identifikatori"
-                            example: 1
-                          type:
-                            type: string
-                            description: "Yetkazib berish turi"
-                            example: "DELIVERY"
-                          free_shipping:
-                            type: boolean
-                            description: "Bepul yetkazib berish mavjudligi"
-                            example: false
-                          delivery_day:
-                            type: integer
-                            description: "Yetkazib berish kuni"
-                            example: 3
-                          region_id:
-                            type: integer
-                            description: "Viloyat identifikatori"
-                            example: 10
-                          district_id:
-                            type: integer
-                            description: "Tuman identifikatori"
-                            example: 101
-          '400': 
-            description: "Noto'g'ri so'rov formati yoki mahsulot ID-si"
-          '401':  
-            description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
-          '404':
-            description: "Mahsulot topilmadi (product_id noto'g'ri)"
-          '500':
-            description: "Server xatosi"
+      responses: 
+        '200':  
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: "Yetkazib berish manzili identifikatori"
+                          example: 1
+                        type:
+                          type: string
+                          description: "Yetkazib berish turi"
+                          example: "DELIVERY"
+                        free_shipping:
+                          type: boolean
+                          description: "Bepul yetkazib berish mavjudligi"
+                          example: false
+                        delivery_day:
+                          type: integer
+                          description: "Yetkazib berish kuni"
+                          example: 3
+                        region_id:
+                          type: integer
+                          description: "Viloyat identifikatori"
+                          example: 10
+                        district_id:
+                          type: integer
+                          description: "Tuman identifikatori"
+                          example: 101
+        '400': 
+          description: "Noto'g'ri so'rov formati yoki mahsulot ID-si"
+        '401':  
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '404':
+          description: "Mahsulot topilmadi (product_id noto'g'ri)"
+        '500':
+          description: "Server xatosi"
 
   # ----------------------------------------------------------------- 
-  # SELLER: Yetkazib berish manzillarini qo'shish, (Sotib oluvchi olib ketadi tanlanganda ishlatiladi)
+  # SELLER: Yetkazib berish manzillarini qo'shish va olish, (Sotib oluvchi olib ketadi tanlanganda ishlatiladi)
   # -----------------------------------------------------------------
-  v1/mobile/seller/warehouses:
+  /v1/mobile/seller/warehouses:
     post:
       tags:
         - Seller
@@ -2366,7 +2361,7 @@ paths:
           schema:
             type: string
             example: "Toshkent shahri, Chilonzor tumani, Amir Temur ko'chasi, 12-uy"
-        - name: address:
+        - name: address
           in: query
           required: false
           description: "Manzil"
@@ -2447,112 +2442,107 @@ paths:
           description: "Manzil topilmadi (id noto'g'ri)"
         '500':
           description: "Server xatosi"
-
-  # ----------------------------------------------------------------- 
-  # SELLER: Yetkazib berish manzillarini olish, (Sotib oluvchi olib ketadi tanlanganda ishlatiladi)
-  # -----------------------------------------------------------------
-  v1/mobile/seller/warehouses:
     get:
-      tags:
-        - Seller
-      summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish (Sotib oluvchi olib ketadi)"
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: Authorization
-          in: header
-          description: "Bearer token (Masalan: Bearer {token})"
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: "Muvaffaqiyatli javob"
-          content:
-            application/json:
+          tags:
+            - Seller
+          summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish (Sotib oluvchi olib ketadi)"
+          security:
+            - BearerAuth: []
+          parameters:
+            - name: Authorization
+              in: header
+              description: "Bearer token (Masalan: Bearer {token})"
+              required: true
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    nullable: true
-                  message:
-                    type: string
-                    example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
-                  status:
-                    type: integer
-                    example: 200
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                          id:
-                            type: integer
-                            example: 1
-                          name:
-                            type: string
-                            example: "Asosiy ombor"
-                          seller_id:
-                            type: integer
-                            example: 5001
-                          address:
-                            type: string
-                            nullable: true
-                            example: "Nurхаёт ko'chasi 15"
-                          full_address:
-                            type: string
-                            nullable: true
-                            example: "Andijon viloyati, Baliqchi tumani, Nurхаёт ko'chasi 15"
-                          region_id:
-                            type: integer
-                            nullable: true
-                            example: 10
-                          district_id:
-                            type: integer
-                            nullable: true
-                            example: 101
-                          mahalla_id:
-                            type: integer
-                            nullable: true
-                            example: 1001
-                          street_name:
-                            type: string
-                            nullable: true
-                            example: "Nurхаёт"
-                          location:
-                            type: string
-                            nullable: true
-                            description: "GPS koordinatalari (GeoJSON yoki WKT)"
-                            example: "POINT(40.123 72.456)"
-                          is_main:
-                            type: boolean
-                            example: true
-                          created_at:
-                            type: string
-                            format: date-time
-                            example: "2026-06-05T08:11:47"
-                          region_name:
-                            type: string
-                            nullable: true
-                            description: "Viloyat nomi (locale ga qarab)"
-                            example: "Andijon viloyati"
-                          district_name:
-                            type: string
-                            nullable: true
-                            description: "Tuman nomi (locale ga qarab)"
-                            example: "Baliqchi tumani"
-                          mahalla_name:
-                            type: string
-                            nullable: true
-                            description: "Mahalla nomi (locale ga qarab)"
-                            example: "Dungsaroy mahallasi"
-        '400':
-          description: "Noto'g'ri so'rov formati"
-        '401':  
-          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
-        '500': 
-          description: "Server xatosi"
+                type: string
+          responses:
+            '200':
+              description: "Muvaffaqiyatli javob"
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      error:
+                        type: string
+                        nullable: true
+                      message:
+                        type: string
+                        example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
+                      status:
+                        type: integer
+                        example: 200
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                              id:
+                                type: integer
+                                example: 1
+                              name:
+                                type: string
+                                example: "Asosiy ombor"
+                              seller_id:
+                                type: integer
+                                example: 5001
+                              address:
+                                type: string
+                                nullable: true
+                                example: "Nurхаёт ko'chasi 15"
+                              full_address:
+                                type: string
+                                nullable: true
+                                example: "Andijon viloyati, Baliqchi tumani, Nurхаёт ko'chasi 15"
+                              region_id:
+                                type: integer
+                                nullable: true
+                                example: 10
+                              district_id:
+                                type: integer
+                                nullable: true
+                                example: 101
+                              mahalla_id:
+                                type: integer
+                                nullable: true
+                                example: 1001
+                              street_name:
+                                type: string
+                                nullable: true
+                                example: "Nurхаёт"
+                              location:
+                                type: string
+                                nullable: true
+                                description: "GPS koordinatalari (GeoJSON yoki WKT)"
+                                example: "POINT(40.123 72.456)"
+                              is_main:
+                                type: boolean
+                                example: true
+                              created_at:
+                                type: string
+                                format: date-time
+                                example: "2026-06-05T08:11:47"
+                              region_name:
+                                type: string
+                                nullable: true
+                                description: "Viloyat nomi (locale ga qarab)"
+                                example: "Andijon viloyati"
+                              district_name:
+                                type: string
+                                nullable: true
+                                description: "Tuman nomi (locale ga qarab)"
+                                example: "Baliqchi tumani"
+                              mahalla_name:
+                                type: string
+                                nullable: true
+                                description: "Mahalla nomi (locale ga qarab)"
+                                example: "Dungsaroy mahallasi"
+            '400':
+              description: "Noto'g'ri so'rov formati"
+            '401':  
+              description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+            '500': 
+              description: "Server xatosi"
 
   # ----------------------------------------------------------------- 
   # SELLER: Mahsulot qo'shish
@@ -2560,7 +2550,7 @@ paths:
   /v1/mobile/seller/add/service:
     post:
       tags:
-        - Seller Products
+        - Seller
       summary: "Mahsulot qo'shish"
       security:
         - BearerAuth: []
@@ -2736,23 +2726,21 @@ paths:
                     items:
                       type: object
                       nullable: true
-                      schema:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                            description: "Data identifikatori"
-                            example: 1
-                          name1:
-                            type: string
-                          name2:
-                            type: string
-                          name3:
-                            type: string
-                          namer4:
-                            type: string
-                          val01:
-                            type: string
+                      properties:
+                        id:
+                          type: integer
+                          description: "Data identifikatori"
+                          example: 1
+                        name1:
+                          type: string
+                        name2:
+                          type: string
+                        name3:
+                          type: string
+                        namer4:
+                          type: string
+                        val01:
+                          type: string
         '400':
           description: "Noto'g'ri so'rov formati yoki type parametri"
         '401':
