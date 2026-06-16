@@ -37,9 +37,12 @@ tags:
     description: Regionlar va tumanlar ma'lumotnomasi
   - name: Tenders
     description: Tender mahsulotlari va tender ma'lumotlari bilan ishlash bo'limi
-  - name: Seller
-    description: Ta'minotchi (Sotuvchi) login qismi va sotuvchiga oid endpointlar
-
+  - name: Seller orders
+    description: Ta'minotchi (Sotuvchi) oid buyurtmalar bilan ishlash bo'limi
+  - name: Seller notify
+    description: Ta'minotchi (Sotuvchi) oid xabarlar bilan ishlash bo'limi
+  - name: Seller tenders
+    description: Ta'minotchi (Sotuvchi) oid tenderlar bilan ishlash bo'limi
 # =================================================================
 # 2. SERVERS (Server manzillari)
 # =================================================================
@@ -1449,7 +1452,7 @@ paths:
   /v1/mobile/seller/balance:
     get:
       tags:
-        - Seller
+        - Seller order
       summary: "Ta'minotchi balansini olish"
       security:
         - BearerAuth: []
@@ -1503,7 +1506,7 @@ paths:
   /v1/mobile/seller/statistics:  
     get:
       tags:
-        - Seller
+        - Seller order
       summary: "Ta'minotchi statistikasini olish"
       security:
         - BearerAuth: []
@@ -1557,7 +1560,7 @@ paths:
   /v1/mobile/seller/orders:
     get:
       tags:
-        - Seller
+        - Seller order
       summary: "Ta'minotchi buyurtmalarini olish"
       security:
         - BearerAuth: []
@@ -1662,7 +1665,7 @@ paths:
   /v1/mobile/seller/order/cancel:
     post:
       tags:
-        - Seller
+        - Seller order
       summary: "Ta'minotchi buyurtmani bekor qilish"
       security:
         - BearerAuth: []
@@ -1717,7 +1720,7 @@ paths:
   /v1/mobile/seller/notify:
     get:
       tags:
-        - Seller
+        - Seller notify
       summary: "Ta'minotchiga tegishli xabarlarni olish"
       security:
         - BearerAuth: []
@@ -1793,7 +1796,7 @@ paths:
   /v1/mobile/seller/tenders:
     get:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Ta'minotchi tenderlarini olish"
       security:
         - BearerAuth: []
@@ -1972,7 +1975,7 @@ paths:
   /v1/mobile/seller/tender/products:
     get:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Tenderga tegishli mahsulotlarni olish"
       security:
         - BearerAuth: []
@@ -2154,7 +2157,7 @@ paths:
   /v1/mobile/seller/deliverys:
     post:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Yetkazib berish manzillarini qo'shish"
       security:
         - BearerAuth: []
@@ -2257,7 +2260,7 @@ paths:
           description: "Server xatosi"
     get:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish"  
       security:
         - BearerAuth: []  
@@ -2336,7 +2339,7 @@ paths:
   /v1/mobile/seller/warehouses:
     post:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Yetkazib berish manzillarini qo'shish (Sotib oluvchi olib ketadi)"
       security:
         - BearerAuth: []
@@ -2444,7 +2447,7 @@ paths:
           description: "Server xatosi"
     get:
           tags:
-            - Seller
+            - Seller tenders
           summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish (Sotib oluvchi olib ketadi)"
           security:
             - BearerAuth: []
@@ -2550,7 +2553,7 @@ paths:
   /v1/mobile/seller/add/service:
     post:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Mahsulot qo'shish"
       security:
         - BearerAuth: []
@@ -2686,7 +2689,7 @@ paths:
   /v1/mobile/seller/lists:
     get:
       tags:
-        - Seller
+        - Seller tenders
       summary: "Listdan data olish"
       security:
         - BearerAuth: []
