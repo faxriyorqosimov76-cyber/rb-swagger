@@ -512,7 +512,7 @@ paths:
   # -----------------------------------------------------------------
   # USER: Eimzo tizimi bilan login
   # ----------------------------------------------------------------- 
-  /v1/mobile/auth/e-imzo/login:
+  /v2/mobile/auth/e-imzo/login:
     post:
       tags:
         - User
@@ -520,69 +520,69 @@ paths:
       parameters:
         - name: useragent
           in: header
-          required: true
+          required: false
           description: "Foydalanuvchi agenti"
           schema:
             type: string
         - name: appversioncode
           in: header
-          required: true
+          required: false
           description: "Ilova versiyasi (version code)"
           schema:
             type: string
         - name: appversionname
           in: header
-          required: true
+          required: false
           description: "Ilova versiyasi (version name)"
           schema:
             type: string
         - name: acceptlanguage
           in: header
-          required: true
+          required: false
           description: "Qabul qilinadigan til kodi (uz, ru, la)"
           schema:
             type: string
             enum: [uz, ru, la]
         - name: deviceid
           in: header    
-          required: true
+          required: false
           description: "Qurilmaning unikal identifikatori"
           schema:
             type: string
         - name: devicename
           in: header
-          required: true
+          required: false
           description: "Qurilmaning nomi"
           schema:
             type: string
         - name: devicemanufacturer
           in: header
-          required: true
+          required: false
           description: "Qurilmaning ishlab chiqaruvchisi"
           schema:
             type: string
         - name: devicemodel
           in: header
-          required: true
+          required: false
           description: "Qurilmaning modeli"
           schema:
             type: string
         - name: androidos 
           in: header
-          required: true
+          required: false
           description: "Android operatsion tizimining versiyasi"
           schema:
             type: string
         - name: nightmode
           in: header
-          required: true
+          required: false
           description: "Tungi rejim holati (true yoki false)"
           schema:
             type: boolean
-        - name: sign
-          in: query
+        - name: accessToken
+          in: header
           required: true
-          description: "Eimzo tizimidan olingan imzo (signature)"
+          description: "Eimzo tizimi tomonidan berilgan access token"
           schema:
             type: string
       responses:
@@ -596,12 +596,8 @@ paths:
                   user:
                     type: object
                     properties:
-                      token:
-                        type: string
                       userInfo:
                         type: object
-                    required:
-                      - token
                   insert_mobile:
                     type: object
         '401':
@@ -633,6 +629,8 @@ paths:
                 mobile_phone:
                   type: string
                 telegram_id:
+                  type: string
+                passport_number:
                   type: string
                 email:
                   type: string
@@ -1490,7 +1488,7 @@ paths:
                       bail:
                         type: number
                         example: 500000.00
-                        description: "Ta'minotchining jarayondagi mablag'i"
+                        description: "Ta'minotchining jarimaga olingan mablag'i"
                       blocked:
                         type: number
                         example: 200000.00
