@@ -1450,7 +1450,7 @@ paths:
   /v1/mobile/seller/balance:
     get:
       tags:
-        - Seller order
+        - Seller orders
       summary: "Ta'minotchi balansini olish"
       security:
         - BearerAuth: []
@@ -1504,7 +1504,7 @@ paths:
   /v1/mobile/seller/statistics:  
     get:
       tags:
-        - Seller order
+        - Seller orders
       summary: "Ta'minotchi statistikasini olish"
       security:
         - BearerAuth: []
@@ -1558,7 +1558,7 @@ paths:
   /v1/mobile/seller/orders:
     get:
       tags:
-        - Seller order
+        - Seller orders
       summary: "Ta'minotchi buyurtmalarini olish"
       security:
         - BearerAuth: []
@@ -1663,7 +1663,7 @@ paths:
   /v1/mobile/seller/order/cancel:
     post:
       tags:
-        - Seller order
+        - Seller orders
       summary: "Ta'minotchi buyurtmani bekor qilish"
       security:
         - BearerAuth: []
@@ -2140,6 +2140,73 @@ paths:
                           type: boolean
                           description: "Bu mahsulotga taklif berilgan yoki yo'qligi"
                           example: false
+                  offers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        seller_tin:
+                          type: integer
+                          description: "Sotuvchining STIR (TIN) raqami"
+                          example: 308835814
+                        org_name:
+                          type: string
+                          description: "Tashkilot nomi"
+                          example: "TEX PRO-SILVER MCHJ"
+                        offer_created_at:
+                          type: string
+                          description: "Taklif yaratilgan vaqt (DD.MM.YYYY HH24:MI:SS formatida)"
+                          example: "15.06.2026 14:30:00"
+                        total_offer_sum:
+                          type: number
+                          description: "Sotuvchining umumiy taklif summasi"
+                          example: 10500000.00
+                        is_winner:
+                          type: boolean
+                          description: "Sotuvchi g'olib yoki yo'qligi (seller_rank = 1 bo'lsa true)"
+                          example: true
+                        is_seller:
+                          type: boolean
+                          description: "So'rov yuborgan foydalanuvchi shu sotuvchi yoki yo'qligi"
+                          example: false
+                        user_org_id:
+                          type: integer
+                          description: "Joriy foydalanuvchining tashkilot IDsi (token dan olinadi)"
+                          example: 308835814
+                        products:
+                          type: array
+                          description: "Sotuvchi taklif qilgan mahsulotlar ro'yxati (JSON aggregatsiya)"
+                          items:
+                            type: object
+                            properties:
+                              product_id:
+                                type: integer
+                                description: "Mahsulot identifikatori"
+                                example: 1696974
+                              name:
+                                type: string
+                                description: "Mahsulot nomi"
+                                example: "электромотороллер"
+                              mxik_code:
+                                type: string
+                                description: "Mahsulotning MXIK kodi"
+                                example: "08711001001000000"
+                              amount:
+                                type: number
+                                description: "Mahsulot miqdori"
+                                example: 1
+                              start_price:
+                                type: number
+                                description: "Mahsulotning boshlang'ich narxi"
+                                example: 10500000.00
+                              offer_price:
+                                type: number
+                                description: "Sotuvchi taklif qilgan narx"
+                                example: 9800000.00
+                              product_total_offer:
+                                type: number
+                                description: "Mahsulot bo'yicha umumiy taklif summasi (miqdor * taklif narxi)"
+                                example: 9800000.00
         '401':
           description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
         '404':
@@ -2444,106 +2511,106 @@ paths:
         '500':
           description: "Server xatosi"
     get:
-          tags:
-            - Seller tenders
-          summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish (Sotib oluvchi olib ketadi)"
-          security:
-            - BearerAuth: []
-          parameters:
-            - name: Authorization
-              in: header
-              description: "Bearer token (Masalan: Bearer {token})"
-              required: true
+      tags:
+        - Seller tenders
+      summary: "Tenderdagi mahsulotga tegishli yetkazib berish manzillarini olish (Sotib oluvchi olib ketadi)"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
               schema:
-                type: string
-          responses:
-            '200':
-              description: "Muvaffaqiyatli javob"
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      error:
-                        type: string
-                        nullable: true
-                      message:
-                        type: string
-                        example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
-                      status:
-                        type: integer
-                        example: 200
-                      data:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                              id:
-                                type: integer
-                                example: 1
-                              name:
-                                type: string
-                                example: "Asosiy ombor"
-                              seller_id:
-                                type: integer
-                                example: 5001
-                              address:
-                                type: string
-                                nullable: true
-                                example: "Nurхаёт ko'chasi 15"
-                              full_address:
-                                type: string
-                                nullable: true
-                                example: "Andijon viloyati, Baliqchi tumani, Nurхаёт ko'chasi 15"
-                              region_id:
-                                type: integer
-                                nullable: true
-                                example: 10
-                              district_id:
-                                type: integer
-                                nullable: true
-                                example: 101
-                              mahalla_id:
-                                type: integer
-                                nullable: true
-                                example: 1001
-                              street_name:
-                                type: string
-                                nullable: true
-                                example: "Nurхаёт"
-                              location:
-                                type: string
-                                nullable: true
-                                description: "GPS koordinatalari (GeoJSON yoki WKT)"
-                                example: "POINT(40.123 72.456)"
-                              is_main:
-                                type: boolean
-                                example: true
-                              created_at:
-                                type: string
-                                format: date-time
-                                example: "2026-06-05T08:11:47"
-                              region_name:
-                                type: string
-                                nullable: true
-                                description: "Viloyat nomi (locale ga qarab)"
-                                example: "Andijon viloyati"
-                              district_name:
-                                type: string
-                                nullable: true
-                                description: "Tuman nomi (locale ga qarab)"
-                                example: "Baliqchi tumani"
-                              mahalla_name:
-                                type: string
-                                nullable: true
-                                description: "Mahalla nomi (locale ga qarab)"
-                                example: "Dungsaroy mahallasi"
-            '400':
-              description: "Noto'g'ri so'rov formati"
-            '401':  
-              description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
-            '500': 
-              description: "Server xatosi"
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Yetkazib berish manzillari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name:
+                            type: string
+                            example: "Asosiy ombor"
+                          seller_id:
+                            type: integer
+                            example: 5001
+                          address:
+                            type: string
+                            nullable: true
+                            example: "Nurхаёт ko'chasi 15"
+                          full_address:
+                            type: string
+                            nullable: true
+                            example: "Andijon viloyati, Baliqchi tumani, Nurхаёт ko'chasi 15"
+                          region_id:
+                            type: integer
+                            nullable: true
+                            example: 10
+                          district_id:
+                            type: integer
+                            nullable: true
+                            example: 101
+                          mahalla_id:
+                            type: integer
+                            nullable: true
+                            example: 1001
+                          street_name:
+                            type: string
+                            nullable: true
+                            example: "Nurхаёт"
+                          location:
+                            type: string
+                            nullable: true
+                            description: "GPS koordinatalari (GeoJSON yoki WKT)"
+                            example: "POINT(40.123 72.456)"
+                          is_main:
+                            type: boolean
+                            example: true
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2026-06-05T08:11:47"
+                          region_name:
+                            type: string
+                            nullable: true
+                            description: "Viloyat nomi (locale ga qarab)"
+                            example: "Andijon viloyati"
+                          district_name:
+                            type: string
+                            nullable: true
+                            description: "Tuman nomi (locale ga qarab)"
+                            example: "Baliqchi tumani"
+                          mahalla_name:
+                            type: string
+                            nullable: true
+                            description: "Mahalla nomi (locale ga qarab)"
+                            example: "Dungsaroy mahallasi"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':  
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500': 
+          description: "Server xatosi"
 
   # ----------------------------------------------------------------- 
   # SELLER: Mahsulot qo'shish
