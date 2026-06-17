@@ -512,7 +512,7 @@ paths:
   # -----------------------------------------------------------------
   # USER: Eimzo tizimi bilan login
   # ----------------------------------------------------------------- 
-  /v2/mobile/auth/e-imzo/login:
+  //v2/mobile/seller/auth/e-imzo/login:
     post:
       tags:
         - User
@@ -520,19 +520,19 @@ paths:
       parameters:
         - name: useragent
           in: header
-          required: false
+          required: true
           description: "Foydalanuvchi agenti"
           schema:
             type: string
         - name: appversioncode
           in: header
-          required: false
+          required: true
           description: "Ilova versiyasi (version code)"
           schema:
-            type: string
+            type: integer
         - name: appversionname
           in: header
-          required: false
+          required: true
           description: "Ilova versiyasi (version name)"
           schema:
             type: string
@@ -545,40 +545,40 @@ paths:
             enum: [uz, ru, la]
         - name: deviceid
           in: header    
-          required: false
+          required: true
           description: "Qurilmaning unikal identifikatori"
           schema:
             type: string
         - name: devicename
           in: header
-          required: false
+          required: true
           description: "Qurilmaning nomi"
           schema:
             type: string
         - name: devicemanufacturer
           in: header
-          required: false
+          required: true
           description: "Qurilmaning ishlab chiqaruvchisi"
           schema:
             type: string
         - name: devicemodel
           in: header
-          required: false
+          required: true
           description: "Qurilmaning modeli"
           schema:
             type: string
         - name: androidos 
           in: header
-          required: false
+          required: true
           description: "Android operatsion tizimining versiyasi"
           schema:
             type: string
         - name: nightmode
           in: header
           required: false
-          description: "Tungi rejim holati (true yoki false)"
+          description: "Tungi rejim holati (ENABLED yoki DISABLED)"
           schema:
-            type: boolean
+            type: string
         - name: accessToken
           in: header
           required: true
