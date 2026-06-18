@@ -1552,6 +1552,65 @@ paths:
         '500':
           description: "Server xatosi"
 
+  # -----------------------------------------------------------------
+  # SELLER: Tender statistikalarini olish
+  # ----------------------------------------------------------------- 
+  /v1/mobile/seller/tender/statistics:
+    get:
+        tags:
+          - Seller orders
+        summary: "Tender statistikasini olish"
+        security:
+          - BearerAuth: []
+        parameters:
+          - name: Authorization
+            in: header
+            description: "Bearer token (Masalan: Bearer {token})"
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: "Muvaffaqiyatli javob"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      nullable: true
+                    message:
+                      type: string
+                      example: "Statistika muvaffaqiyatli olindi"
+                    status:
+                      type: integer
+                      example: 200
+                    data:
+                      type: object
+                      properties:
+                        total_trend:
+                          type: number
+                          example: 5000000.00
+                          description: "Umumiy tenderlar soni"
+                        active_trend:
+                          type: integer
+                          example: 15
+                          description: "Faol tenderlar soni"
+                        ending_soon_trend:
+                          type: integer
+                          example: 250
+                          description: "Kutilayotgan tenderlar soni"
+                        finished_trend:
+                          type: integer
+                          example: 250
+                          description: "Tugagan tenderlar soni"
+          '401':
+            description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+          '500':
+            description: "Server xatosi"
+
+
   # ----------------------------------------------------------------- 
   # SELLER: Buyurtmalarni olish
   # ----------------------------------------------------------------- 
