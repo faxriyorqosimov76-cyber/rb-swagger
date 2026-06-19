@@ -43,6 +43,8 @@ tags:
     description: Ta'minotchi (Sotuvchi) oid xabarlar bilan ishlash bo'limi
   - name: Seller tenders
     description: Ta'minotchi (Sotuvchi) oid tenderlar bilan ishlash bo'limi
+  - name: Seller contracts
+    description: Ta'minotchi (Sotubchi) oid shartnomalar
 # =================================================================
 # 2. SERVERS (Server manzillari)
 # =================================================================
@@ -512,7 +514,7 @@ paths:
   # -----------------------------------------------------------------
   # USER: Eimzo tizimi bilan login
   # ----------------------------------------------------------------- 
-  //v2/mobile/seller/auth/e-imzo/login:
+  /v2/mobile/seller/auth/e-imzo/login:
     post:
       tags:
         - User
@@ -1582,29 +1584,88 @@ paths:
                       nullable: true
                     message:
                       type: string
-                      example: "Statistika muvaffaqiyatli olindi"
+                      nullable: true
                     status:
                       type: integer
                       example: 200
                     data:
                       type: object
                       properties:
+                        total:
+                          type: integer
+                          description: "Umumiy tenderlar soni (bugun)"
+                          example: 120
                         total_trend:
                           type: number
-                          example: 5000000.00
-                          description: "Umumiy tenderlar soni"
+                          description: "Kecha bilan solishtirgan o'zgarish foizi (mutlaq qiymat)"
+                          example: 15.5
+                        total_trend_up:
+                          type: boolean
+                          description: "Bugungi ko'rsatkich kechagidan katta yoki tengmi"
+                          example: true
+                        total_sparkline:
+                          type: array
+                          description: "Kecha va bugungi qiymat [kecha, bugun]"
+                          items:
+                            type: integer
+                          example: [104, 120]
+
+                        active:
+                          type: integer
+                          description: "Faol tenderlar soni (bugun)"
+                          example: 80
                         active_trend:
+                          type: number
+                          description: "Faol tenderlar o'zgarish foizi (mutlaq qiymat)"
+                          example: 10.0
+                        active_trend_up:
+                          type: boolean
+                          description: "Bugungi faol tenderlar kechagidan katta yoki tengmi"
+                          example: true
+                        active_sparkline:
+                          type: array
+                          description: "Kecha va bugungi faol tenderlar [kecha, bugun]"
+                          items:
+                            type: integer
+                          example: [72, 80]
+
+                        ending_soon:
                           type: integer
+                          description: "1 soat ichida tugaydigan tenderlar soni (bugun)"
                           example: 15
-                          description: "Faol tenderlar soni"
                         ending_soon_trend:
+                          type: number
+                          description: "Tez tugaydigan tenderlar o'zgarish foizi (mutlaq qiymat)"
+                          example: 25.0
+                        ending_soon_trend_up:
+                          type: boolean
+                          description: "Bugungi ko'rsatkich kechagidan katta yoki tengmi"
+                          example: false
+                        ending_soon_sparkline:
+                          type: array
+                          description: "Kecha va bugungi tez tugaydigan tenderlar [kecha, bugun]"
+                          items:
+                            type: integer
+                          example: [20, 15]
+
+                        finished:
                           type: integer
-                          example: 250
-                          description: "Kutilayotgan tenderlar soni"
-                        finished_trend:
-                          type: integer
-                          example: 250
                           description: "Tugagan tenderlar soni"
+                          example: 45
+                        finished_trend:
+                          type: number
+                          description: "Tugagan tenderlar o'zgarish foizi (mutlaq qiymat)"
+                          example: 5.0
+                        finished_trend_up:
+                          type: boolean
+                          description: "Bugungi tugagan tenderlar kechagidan katta yoki tengmi"
+                          example: true
+                        finished_sparkline:
+                          type: array
+                          description: "Kecha va bugungi tugagan tenderlar [kecha, bugun]"
+                          items:
+                            type: integer
+                          example: [43, 45]
           '401':
             description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
           '500':
@@ -2827,7 +2888,12 @@ paths:
         - name: type_id
           in: query
           required: true
-          description: "Olingan data turi"
+          description: |
+              Olingan data turi:
+              - `44` — Mahsulot turlari
+              - `45` — Qadoq turlari
+              - `155` — Mahsulot kelib chiqish turlari
+              - `156` — QQS stavkasi turlari
           schema:
             type: integer
             example: 1
@@ -2873,8 +2939,694 @@ paths:
         '401':
           description: "Autentifikatsiya xatosi"
 
+  # ----------------------------------------------------------------- 
+  # SELLER: Shartnomalar bilan ishlash bo'limi
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/contracts:
+    get:
+        tags:
+          - Seller contracts
+        summary: "Ta'minotchiga oid shartnomalar"
+        security:
+          - BearerAuth: []
+        parameters:
+          - name: Authorization
+            in: header
+            description: "Bearer token (Masalan: Bearer {token})"
+            required: true
+            schema:
+              type: string
+          - name: seller_tin
+            in: query
+            description: "Ta'minotchi tin raqami (token dan olinadi, agar berilmasa token dagi tin ishlatiladi)"
+            required: false
+            schema:
+              type: string
+          - name: contract_type
+            in: query
+            description: "Shartnoma turi (FAMILY_CREDIT, SUDO_MAHALLA, ALL)"
+            required: false
+            schema:
+              type: string
+              example: ALL
+          - name: bdate 
+            in: query
+            description: "Boshlanish sanasi (YYYY-MM-DD)"
+            required: false
+            schema:
+              type: string
+              example: 2026-01-01
+          - name: edate
+            in: query
+            description: "Tugash sanasi (YYYY-MM-DD)"
+            required: false
+            schema:
+              type: string
+              example: 2026-12-31
+          - name: doc_status
+            in: query
+            description: "Shartnoma holati (ALL, REJECTED, CANCELED, FULL_SIGNED, SYS_CANCELED)"
+            required: false
+            schema:
+              type: string
+              example: ALL
+          - name: page
+            in: query
+            description: "Sahifa raqami (1 dan boshlanadi)"
+            required: false
+            schema:
+              type: integer
+              example: 1
+          - name: page_size
+            in: query
+            description: "Sahifadagi elementlar soni"
+            required: false
+            schema:
+              type: integer
+              example: 10
+        responses:
+          '200':
+            description: "Muvaffaqiyatli javob"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      nullable: true
+                    message:
+                      type: string
+                      example: "Shartnomalar muvaffaqiyatli olindi"
+                    status:
+                      type: integer
+                      example: 200
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                            contract_id:
+                              type: integer
+                              description: "Shartnoma identifikatori"
+                              example: 12345
+                            doc_number:
+                              type: string
+                              description: "Shartnoma raqami"
+                              example: "CTR-2026-0001"
+                            doc_status:
+                              type: string
+                              description: "Shartnoma holati"
+                              example: "FULL_SIGNED"
+                            order_num:
+                              type: string
+                              description: "Shartnoma bo'yicha buyurtma raqami"
+                              example: "ORD-2026-54321"
+                            buyer_name:
+                              type: string
+                              description: "Xaridorning to'liq ismi"
+                              example: "Aliyev Jamshid"
+                            seller_name:
+                              type: string
+                              description: "Ta'minotchi tashkilot nomi"
+                              example: "TEX PRO-SILVER MCHJ"
+                            order_date:
+                              type: string
+                              description: "Buyurtma sanasi"
+                              example: "2026-06-15"
+                            doc_date:
+                              type: string
+                              description: "Shartnoma sanasi"
+                              example: "2026-06-20"
+                            asum:
+                              type: number
+                              description: "Shartnoma summasi"
+                              example: 15000000.00
+                            cash_sum:
+                              type: number
+                              description: "Naqd summa"
+                              example: 5000000.00
+                            contract_type:
+                              type: string
+                              description: "Shartnoma turi"
+                              example: "FAMILY_CREDIT"
+                            buyer_sign:
+                              type: string
+                              description: "Xaridor imzolagan yoki yo'qligi"
+                              example: "2026-06-21T10:30:00"
+                            seller_sign:
+                              type: string
+                              description: "Ta'minotchi imzolagan yoki yo'qligi"
+                              example: "2026-06-22T11:00:00"
+                            fund_sign:
+                              type: string
+                              description: "Jamg'arma imzolagan yoki yo'qligi"
+                              example: "2026-06-23T12:00:00"
+                            created_at:
+                              type: string
+                              description: "Shartnoma yaratilgan vaqt"
+                              example: "2026-06-15T09:00:00"
+                            doc_status_text:
+                              type: string
+                              description: "Shartnoma holati matni"
+                              example: "Бекор қилинди"
+                            button_status:
+                              type: string
+                              description: "Shartnoma tugallanganligi yoki imzolash holati"
+                              enum:
+                                - SIGN
+                                - READ
+                                - CREATE
+                              example: "SIGN"
+          '400':
+            description: "Noto'g'ri so'rov formati"
+          '401':  
+            description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+          '500': 
+            description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Shartnomalar bilan ishlash bo'limi (MXIK orqali o'ram turini olish)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/mxik/packages:
+      get:
+        tags:
+          - Seller contracts
+        summary: "MXIK orqali qadoq turini olish"
+        security:
+          - BearerAuth: []
+        parameters:
+          - name: Authorization
+            in: header
+            description: "Bearer token (Masalan: Bearer {token})"
+            required: true
+            schema:
+              type: string
+          - name: mxik
+            in: query
+            required: true
+            description: "Mahsulotning MXIK kodi"
+            schema:
+              type: string
+              example: "08711001001000000"
+        responses:
+          '200':
+            description: "Muvaffaqiyatli javob"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      nullable: true
+                    message:
+                      type: string
+                      example: "Qadoq turi muvaffaqiyatli olindi"
+                    status:
+                      type: integer
+                      example: 200
+                    data:
+                      type: object
+                      nullable: true
+                      properties:
+                        package_id:
+                          type: integer
+                          description: "Qadoq turi identifikatori"
+                          example: 1
+                        package_name:
+                          type: string
+                          description: "Qadoq turi nomi"
+                          example: "Kartон коробка"
+          '400':
+            description: "Noto'g'ri so'rov formati yoki mxik parametri"
+          '401':
+            description: "Autentifikatsiya xatosi"
   
-  
+  # ----------------------------------------------------------------- 
+  # SELLER: Shartnomalar bilan ishlash bo'limi (Imtiyozlarni olish)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/factura/privileges:
+      get:
+        tags:
+          - Seller contracts
+        summary: "Imtiyozlarni olish"
+        security:
+          - BearerAuth: []
+        parameters:
+          - name: Authorization
+            in: header
+            description: "Bearer token (Masalan: Bearer {token})"
+            required: true
+            schema:
+              type: string
+          - name: contract_id
+            in: query
+            required: true
+            description: "Shartnoma identifikatori"
+            schema:
+              type: integer
+              example: 12345
+          - name: doc_date
+            in: query
+            required: true
+            description: "Factura sanasi (YYYY-MM-DD)"
+            schema:
+              type: string
+              example: 2026-06-20
+          - name: factura_date
+            in: query
+            required: true
+            description: "Factura sanasi (YYYY-MM-DD)"
+            schema:
+              type: string
+              example: 2026-06-21
+        responses:
+          '200':
+            description: "Muvaffaqiyatli javob"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      nullable: true
+                    message:
+                      type: string
+                      nullable: true
+                    timestamp:
+                      type: string
+                      example: "19.06.2026 121743"
+                    status:
+                      type: integer
+                      example: 200
+                    path:
+                      type: string
+                      nullable: true
+                    response:
+                      type: string
+                      nullable: true
+                    data:
+                      type: object
+                      properties:
+                        seller_tin:
+                          type: integer
+                          description: "Sotuvchining STIR raqami"
+                          example: 204345170
+                        seller_info:
+                          type: object
+                          properties:
+                            code:
+                              type: integer
+                              example: 21
+                            name:
+                              type: string
+                              example: "QQS to'lovchi+ (guvohnoma nofaol)"
+                            nameUz:
+                              type: string
+                              example: "QQS to'lovchi+ (guvohnoma nofaol)"
+                            nameRu:
+                              type: string
+                              example: "Плательщик НДС+ (сертификат неактивный)"
+                        options:
+                          type: object
+                          properties:
+                            error:
+                              type: string
+                              nullable: true
+                            message:
+                              type: string
+                              nullable: true
+                            timestamp:
+                              type: integer
+                              example: 1781853463434
+                            status:
+                              type: integer
+                              example: 200
+                            path:
+                              type: string
+                              nullable: true
+                            response:
+                              type: string
+                              nullable: true
+                            data:
+                              type: object
+                              description: "Sotuvchi TIN bo'yicha soliq ma'lumotlari (key = seller_tin)"
+                              additionalProperties:
+                                type: object
+                                properties:
+                                  sellerWithoutVat:
+                                    type: array
+                                    description: "QQS siz sotuvchi ro'yxati"
+                                    items:
+                                      type: object
+                                  sellerZeroVat:
+                                    type: array
+                                    description: "Nol stavkali QQS ro'yxati"
+                                    items:
+                                      type: object
+                                      properties:
+                                        lgotaId:
+                                          type: integer
+                                          example: 104439
+                                        lgotaName:
+                                          type: string
+                                          example: "ПФ-153-сон 04.09.2025..."
+                                        buyerTins:
+                                          type: array
+                                          nullable: true
+                                          items:
+                                            type: integer
+                                        catalogCodes:
+                                          type: array
+                                          description: "Mahsulot katalog kodlari ro'yxati"
+                                          items:
+                                            type: string
+                                            example: "00101001001000000"
+                                  buyerWithoutVat:
+                                    type: array
+                                    description: "QQS siz xaridor ro'yxati"
+                                    items:
+                                      type: object
+                                  buyerZeroVat:
+                                    type: array
+                                    description: "Nol stavkali QQS xaridor ro'yxati"
+                                    items:
+                                      type: object
+
+  # -----------------------------------------------------------------
+  # SELLER: Shartnomalar bilan ishlash bo'limi (Tashkilot ma'lumotlarini olish)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/organization:
+    get:
+      tags:
+        - Seller contracts
+      summary: "Tashkilot ma'lumotlarini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: tin
+          in: query
+          description: "Ta'minotchi STIR raqami"
+          required: true
+          schema:
+            type: string
+            example: 308835814
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Tashkilot ma'lumotlari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data: 
+                    type: object
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':  
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500': 
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Shartnomalar bilan ishlash bo'limi (Shartnoma bo'yicha faktura ma'lumotlarini olish)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/factura:
+    get:
+      tags:
+        - Seller contracts
+      summary: "Shartnoma bo'yicha faktura ma'lumotlarini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: contract_id
+          in: query
+          required: true
+          description: "Shartnoma identifikatori"
+          schema:
+            type: integer
+            example: 12345
+        - name: invoice_id
+          in: query
+          required: true
+          description: "Invoice identifikatori"
+          schema:
+            type: integer
+            example: 67890
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    nullable: true
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      invoice:
+                        type: object
+                        properties:
+                          doc_num:
+                            type: string
+                            example: "INV-2026-001"
+                          doc_date:
+                            type: string
+                            example: "19.06.2026"
+                          contract_num:
+                            type: string
+                            nullable: true
+                            example: "CNT-2026-001"
+                          contract_doc_date:
+                            type: string
+                            nullable: true
+                            example: "01.01.2026"
+                          seller_name:
+                            type: string
+                            example: "TEX PRO-SILVER MCHJ"
+                          seller_tin:
+                            type: integer
+                            example: 204345170
+                          seller_address:
+                            type: string
+                            nullable: true
+                            example: "Toshkent sh., Yunusobod t."
+                          seller_vat_code:
+                            type: string
+                            nullable: true
+                            example: "123456789"
+                          vat_rate:
+                            type: number
+                            nullable: true
+                            example: 12
+                          tax_status_code:
+                            type: integer
+                            nullable: true
+                            example: 21
+                          seller_mfo:
+                            type: string
+                            nullable: true
+                            example: "01069"
+                          seller_account:
+                            type: string
+                            nullable: true
+                            example: "20208000905434717001"
+                          realization_purpose:
+                            type: integer
+                            nullable: true
+                            example: 1
+                          seller_branch_code:
+                            type: string
+                            nullable: true
+                            example: "00"
+                          buyer_name:
+                            type: string
+                            example: "MANSUROVA DILDORAXON"
+                          buyer_tin:
+                            type: integer
+                            example: 308835814
+                          buyer_address:
+                            type: string
+                            nullable: true
+                            example: "Andijon viloyati, Baliqchi tumani"
+                          buyer_vat_code:
+                            type: string
+                            nullable: true
+                            example: "987654321"
+                          buyer_mfo:
+                            type: string
+                            nullable: true
+                            example: "00873"
+                          buyer_account:
+                            type: string
+                            nullable: true
+                            example: "20208000905434717002"
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            num:
+                              type: integer
+                              description: "Tartib raqami (row_number)"
+                              example: 1
+                            product_id:
+                              type: integer
+                              description: "Mahsulot identifikatori"
+                              example: 1696974
+                            name:
+                              type: string
+                              description: "Mahsulot nomi"
+                              example: "электромотороллер"
+                            catalog:
+                              type: string
+                              description: "Katalog kodi va nomi birlashtrilgan"
+                              example: "(08711001001000000) Мотоциклы"
+                            catalogCode:
+                              type: string
+                              description: "Mahsulot katalog kodi"
+                              example: "08711001001000000"
+                            catalogName:
+                              type: string
+                              description: "Katalog nomi (sub_category + brend + attribute)"
+                              example: "Мотоциклы Honda 125cc"
+                            unitId:
+                              type: integer
+                              description: "O'lchov birligi identifikatori"
+                              example: 3
+                            unitName:
+                              type: string
+                              description: "O'lchov birligi nomi"
+                              example: "dona"
+                            amount:
+                              type: number
+                              description: "Miqdor"
+                              example: 1
+                            price:
+                              type: number
+                              description: "Narx"
+                              example: 10500000.00
+                            delivery_cost:
+                              type: number
+                              description: "Jami summa (total_sum)"
+                              example: 10500000.00
+                            qqs_id:
+                              type: number
+                              nullable: true
+                              description: "QQS stavkasi"
+                              example: 12
+                            qqs_sum:
+                              type: number
+                              nullable: true
+                              description: "QQS summasi"
+                              example: 1134000.00
+                            finalSum:
+                              type: number
+                              description: "Yakuniy summa (QQS bilan)"
+                              example: 11634000.00
+                            privilegeId:
+                              type: integer
+                              nullable: true
+                              description: "Imtiyoz identifikatori (faqat QQS bo'lmagan holatlarda)"
+                              example: null
+                            privilegeName:
+                              type: string
+                              description: "Imtiyoz nomi"
+                              example: "-"
+                            packageCode:
+                              type: string
+                              nullable: true
+                              description: "Qadoqlash kodi"
+                              example: "PCK001"
+                            packageName:
+                              type: string
+                              nullable: true
+                              description: "Qadoqlash nomi"
+                              example: "Quti"
+                            markingProductType:
+                              type: string
+                              nullable: true
+                              description: "Markirovka mahsulot turi"
+                              example: null
+                            markingPackageType:
+                              type: string
+                              nullable: true
+                              description: "Markirovka qadoqlash turi"
+                              example: null
+                            markingCode:
+                              type: string
+                              description: "Markirovka kodi (bo'sh bo'lsa '')"
+                              example: ""
+                            originId:
+                              type: integer
+                              nullable: true
+                              description: "Kelib chiqish identifikatori"
+                              example: 1
+                            mark_required:
+                              type: boolean
+                              nullable: true
+                              description: "Markirovka majburiymi"
+                              example: false
+                            additional_info:
+                              type: array
+                              description: "Qo'shimcha ma'lumotlar (JSON array)"
+                              items:
+                                type: object
+                              example: []
+                            model:
+                              type: string
+                              nullable: true
+                              description: "Mahsulot modeli"
+                              example: "Sport 2026"
+                            category_id:
+                              type: integer
+                              nullable: true
+                              description: "Kategoriya identifikatori"
+                              example: 10
+                            state:
+                              type: integer
+                              description: "Mahsulot holati"
+                              example: 1
+        '400':
+          description: "Noto'g'ri so'rov"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
 # =================================================================
