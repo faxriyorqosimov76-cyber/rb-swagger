@@ -2080,6 +2080,14 @@ paths:
                               type: string
                               description: "G'olib tashkilot nomi (tugagan tenderlar uchun)"
                               example: "XYZ LLC"
+                            user_offer_sum:
+                              type: number
+                              description: "Foydalanuvchi tomonidan berilgan taklif summasi (agar foydalanuvchi taklif bergan bo'lsa)"
+                              example: 2400000.00
+                            min_offer_price:
+                              type: number
+                              description: "Tenderdagi eng kam taklif narxi (agar takliflar mavjud bo'lsa)"
+                              example: 2300000.00
         '401':
           description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
         '500':
