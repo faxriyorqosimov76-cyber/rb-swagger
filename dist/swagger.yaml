@@ -2199,6 +2199,9 @@ paths:
                           type: string
                           description: "Mahsulotning MXIK kodi"
                           example: "08711001001000000"
+                        product_id:
+                          type: integer
+                          description: "Mahsulot identifikatori"
                         product_name:
                           type: string
                           description: "Mahsulot nomi"
@@ -2343,6 +2346,205 @@ paths:
           description: "Server xatosi"
         '503':
           description: "Xizmat vaqtincha mavjud emas (Server band yoki texnik xizmat ko'rsatish)"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Forma uchun Mahsulot ma'lumotlarini olish
+  # -----------------------------------------------------------------
+  v1/mobile/seller/form/products: 
+    get:
+      tags:
+        - Seller tenders
+      summary: "Forma uchun Mahsulot ma'lumotlarini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          required: true
+          description: "Mahsulot identifikatori (product_id)"
+          schema:
+            type: integer
+            example: 1696974
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Mahsulot ma'lumotlari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      old_product:
+                        type: String
+                        description: "Mahsulotning eski nomi (agar mavjud bo'lsa)"
+                      name:
+                        type: String
+                        description: "Mahsulotning nomi"
+                      name_ru:
+                        type: String
+                        description: "Mahsulotning ruscha nomi"
+                      category_id:
+                        type: integer
+                        description: "Mahsulotning toifasi identifikatori"
+                      identification_code:
+                        type: String
+                        description: "Mahsulotning MXIK kodi"
+                      unit_id:
+                        type: integer
+                        description: "Mahsulotning o'lchov birligi identifikatori"
+                      price:
+                        type: number
+                        description: "Mahsulotning narxi" 
+                      amount:
+                        type: integer
+                        description: "Mahsulot miqdori"
+                      all_sum:
+                        type: number
+                        description: "Mahsulotning jami summasi (miqdor * narx)"
+                      min_amount:
+                        type: integer
+                        description: "Mahsulotning minimal miqdori"
+                      technical_parameters:
+                        type: String
+                        description: "Mahsulotning texnik parametrlari"
+                      technical_parameters_ru:
+                        type: String
+                        description: "Mahsulotning texnik parametrlari (ruscha)"
+                      main_photo:
+                        type: String
+                        description: "Mahsulotning asosiy fotosi"
+                      photos:
+                        type: array
+                        description: "Mahsulotning fotosuratlari"
+                        items:
+                          type: String
+                          description: "Mahsulot fotosi URL manzili"
+                      payment_types:
+                        type: array
+                        description: "Mahsulot uchun mavjud to'lov turlari"
+                        items:
+                          type: String
+                          description: "To'lov turi"
+                      delivery_types:
+                        type: array
+                        description: "Mahsulot uchun mavjud yetkazib berish turlari"
+                        items:
+                          type: String
+                          description: "Yetkazib berish turi"
+                      video_link:
+                        type: String
+                        description: "Mahsulotning video havolasi (agar mavjud bo'lsa)"
+                      region_id:
+                        type: integer
+                        description: "Ta'minotchining viloyat identifikatori"
+                      district_id:
+                        type: integer
+                        description: "Ta'minotchining tuman identifikatori"
+                      org_id:
+                        type: integer
+                        description: "Ta'minotchining tashkilot identifikatori"
+                      version:
+                        type: integer
+                        description: "Mahsulot ma'lumotlarining versiyasi (ma'lumotlar o'zgargan bo'lsa versiya raqami oshadi)"
+                      is_moderator:
+                        type: boolean
+                        description: "Mahsulot ma'lumotlarini moderator tekshiruvdan o'tkazgan yoki yo'qligi"
+                      source_id:
+                        type: integer
+                        description: "Tender ID-si (agar mahsulot tenderga qo'shilgan bo'lsa)"
+        '400':
+          description: "Noto'g'ri so'rov formati yoki mahsulot ID-si"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+        '404':
+          description: "Mahsulot topilmadi (id noto'g'ri)"  
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------  
+  # SELLER: Tenderga qo'shilgan mahsulotlarni tasdiqlash (tenderga mahsulot qo'shish)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/approval/products:
+    post:
+      tags:
+        - Seller tenders
+      summary: "Tenderga qo'shilgan mahsulotlarni tasdiqlash (tenderga mahsulot qo'shish)"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: products
+          in: query
+          required: true
+          description: "Ta'minotchiga qo'shiladigan mahsulotlar ro'yxati"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                tender_id:
+                  type: integer
+                  description: "Tender ID-si"
+                  example: 1696974
+                offer_product_id:
+                  type: integer
+                  description: "Taklif qilingan mahsulot ID-si"
+                  example: 123456 
+                price:
+                  type: number
+                  description: "Mahsulotning narxi"
+                  example: 10500000.00
+                tender_num:
+                  type: integer
+                  description: "Tender raqami"
+                  example: 67890
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Mahsulotlar muvaffaqiyatli tasdiqlandi va tenderga qo'shildi"
+                  status:
+                    type: integer
+                    example: 200  
+        '400':
+          description: "Noto'g'ri so'rov formati yoki tender raqami"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+        '404':
+          description: "Tender topilmadi (tender_num noto'g'ri)"  
+        '500':
+          description: "Server xatosi"
 
   # ----------------------------------------------------------------- 
   # SELLER: Yetkazib berish manzillarini qo'shish va olish, (Sotuvchi yetkazib beradi tanlanganda ishlatiladi)
