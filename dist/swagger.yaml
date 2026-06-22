@@ -2478,6 +2478,88 @@ paths:
         '500':
           description: "Server xatosi"
 
+  # ----------------------------------------------------------------- 
+  # SELLER: Qidiruv orqali MXiklarni olish
+  # -----------------------------------------------------------------
+  /api/v1/mxik/list/limit:
+    get:
+      tags:
+        - Seller tenders
+      summary: "Qidiruv orqali MXiklarni olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: true
+          description: "MXIK kodi yoki mahsulot nomi bo'yicha qidiruv so'rovi"
+          schema:
+            type: string
+            example: "08711001001000000"               
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "MXIK kodlari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: "MXIK kodining identifikatori"
+                          example: 1
+                        name:
+                          type: string
+                          description: "MXIK kodining nomi"
+                          example: "электромотороллер"
+                        name2:
+                          type: string
+                          description: "MXIK kodining qo'shimcha nomi (agar mavjud bo'lsa)"
+                          example: "электросамокат"
+                        sub_category_id:
+                          type: integer
+                          description: "MXIK kodining kichik toifasi identifikatori"
+                        has_privilege:
+                          type: boolean
+                          description: "MXIK kodining imtiyozga ega yoki yo'qligi"
+                          example: false
+                        privilege_id:
+                          type: integer
+                          description: "MXIK kodining imtiyoz identifikatori (agar mavjud bo'lsa)"
+                        privilege_name:
+                          type: string  
+                          description: "MXIK kodining imtiyoz nomi (agar mavjud bo'lsa)"
+                        restricted_husbandry:
+                          type: boolean
+                          description: "MXIK kodi cheklangan xo'jalik turiga tegishli yoki yo'qligi"
+                          example: false
+        '400':
+          description: "Noto'g'ri so'rov formati yoki qidiruv parametri"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+        '500':
+          description: "Server xatosi"
+
   # -----------------------------------------------------------------  
   # SELLER: Tenderga qo'shilgan mahsulotlarni tasdiqlash (tenderga mahsulot qo'shish)
   # -----------------------------------------------------------------
