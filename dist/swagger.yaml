@@ -3390,12 +3390,260 @@ paths:
                                 - READ
                                 - CREATE
                               example: "SIGN"
+                            link:
+                              type: string
+                              description: "Shartnoma hujjatiga havola"
+                              example: "https://example.com/contracts/12345.pdf"
           '400':
             description: "Noto'g'ri so'rov formati"
           '401':  
             description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
           '500': 
             description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
+  # SELLER: Hisob-faktura yaratish formasidagi ma'lumotlarni olish
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/form/factura:
+    get:
+      tags:
+        - Seller contracts
+      summary: "Hisob-faktura yaratish formasidagi ma'lumotlarni olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: contract_id
+          in: query
+          required: true
+          description: "Shartnoma identifikatori"
+          schema:
+            type: integer
+            example: 12345
+        - name: invoice_id
+          in: query
+          required: false
+          description: "Hisob-faktura identifikatori (tahrirlash uchun)"
+          schema:
+            type: integer
+            example: 67890
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Hisob-faktura formasi ma'lumotlari muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      invoice:
+                        type: object
+                        properties:
+                          doc_num:
+                            type: string
+                            description: "Hisob-faktura raqami"
+                            example: "INV-2026-0001"
+                          doc_date:
+                            type: string
+                            description: "Hisob-faktura sanasi"
+                            example: "2026-06-20"
+                          contract_number:
+                            type: string
+                            description: "Shartnoma raqami"
+                            example: "CTR-2026-0001"
+                          contract_doc_date:
+                            type: string
+                            description: "Shartnoma sanasi"
+                            example: "2026-06-15"
+                          seller_name:
+                            type: string
+                            description: "Ta'minotchi tashkilot nomi"
+                            example: "TEX PRO-SILVER MCHJ"
+                          seller_tin:
+                            type: string
+                            description: "Ta'minotchi STIR raqami"
+                            example: "204345170"
+                          seller_address:
+                            type: string
+                            description: "Ta'minotchi manzili"
+                            example: "Toshkent shahri, Chilonzor tumani, Amir Temur ko'chasi, 12-uy"
+                          vat_rate:
+                            type: number
+                            description: "QQS stavkasi"
+                            example: 15
+                          seller_vat_code:
+                            type: string
+                            description: "Ta'minotchi QQS kodi"
+                            example: "123456789" 
+                          tax_status_code:
+                            type: string
+                            description: "Soliq holati kodi"
+                            example: "21"
+                          seller_mfo:
+                            type: string
+                            description: "Ta'minotchi MFO kodi"
+                            example: "123456"
+                          seller_account:
+                            type: string
+                            description: "Ta'minotchi hisob raqami"
+                            example: "12345678901234567890"
+                          realization_purpose:
+                            type: string
+                            description: "Tovarni realizatsiya qilish maqsadi"
+                            example: "Sotish"
+                          seller_branch_code:
+                            type: string
+                            description: "Ta'minotchi filial kodi"
+                            example: "001"
+                          buyer_name:
+                            type: string
+                            description: "Xaridorning to'liq ismi"
+                            example: "Aliyev Jamshid"
+                          buyer_tin:
+                            type: string
+                            description: "Xaridor STIR raqami"
+                            example: "204345171"
+                          buyer_address:
+                            type: string
+                            description: "Xaridor manzili"
+                            example: "Toshkent shahri, Yakkasaroy tumani, Mustaqillik ko'chasi, 5-uy"
+                          buyer_vat_code:
+                            type: string
+                            description: "Xaridor QQS kodi"
+                            example: "987654321"
+                          buyer_mfo:
+                            type: string
+                            description: "Xaridor MFO kodi"
+                            example: "654321"
+                          buyer_account:
+                            type: string
+                            description: "Xaridor hisob raqami"
+                            example: "09876543210987654321"
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            num:
+                              type: integer
+                              description: "Mahsulot tartib raqami"
+                              example: 1
+                            product_id:
+                              type: integer
+                              description: "Mahsulot identifikatori"
+                              example: 67890
+                            doc_product_id:
+                              type: integer
+                              description: "Shartnoma mahsulot identifikatori"
+                              example: 54321
+                            name:
+                              type: string
+                              description: "Mahsulot nomi"
+                              example: "Электромотороллер"
+                            catalog:
+                              type: string
+                              description: "Mahsulot katalog nomi"
+                              example: "08711001001000000"
+                            catalogCode:
+                              type: string
+                              description: "Mahsulot katalog kodi (MXIK)"
+                              example: "08711001001000000"
+                            catalogName:
+                              type: string
+                              description: "Mahsulot katalog nomi"  
+                            unitId:
+                              type: integer
+                              description: "O'lchov birligi identifikatori"
+                              example: 3
+                            unitName:
+                              type: string
+                              description: "O'lchov birligi nomi"
+                              example: "dona"
+                            amount:
+                              type: number
+                              description: "Mahsulot miqdori"
+                              example: 100
+                            price:
+                              type: number
+                              description: "Mahsulot narxi"
+                              example: 10500000
+                            delivery_cost:
+                              type: number
+                              description: "Yetkazib berish narxi"
+                              example: 50000
+                            qqs_id:
+                              type: integer
+                              description: "QQS stavkasi identifikatori"
+                            qqs_sum:
+                              type: number
+                              description: "QQS summasi"
+                              example: 157500000
+                            finalSum:
+                              type: number
+                              description: "Mahsulotning yakuniy summasi (narx * miqdor + yetkazib berish narxi + QQS)"
+                              example: 1051575000
+                            privilegeId:
+                              type: integer
+                              description: "Imtiyoz identifikatori"
+                            privilegeName:
+                              type: string
+                              description: "Imtiyoz nomi"
+                            packageCode:
+                              type: string
+                              description: "Qadoq kodi"
+                            packageName:
+                              type: string
+                              description: "Qadoq nomi"
+                            markingProductType:
+                              type: string
+                              description: "Markirovka turi"
+                            markingPackageType:
+                              type: string
+                              description: "Qadoq markirovka turi"
+                            markingCode:
+                              type: string
+                              description: "Markirovka kodi"
+                            originId:
+                              type: integer
+                              description: "Kelib chiqish identifikatori"
+                            mark_required:
+                              type: boolean
+                              description: "Markirovka talab qilinadimi"
+                            additional_info:
+                              type: string
+                              description: "Qo'shimcha ma'lumot"
+                            model:
+                              type: string
+                              description: "Mahsulot modeli"
+                            text:
+                              type: string
+                              description: "Mahsulot tavsifi"
+                            category_id:
+                              type: integer
+                              description: "Kategoriya identifikatori"
+                            state:
+                              type: string
+                              description: "Mahsulot holati"
+        '400':
+          description: "Noto'g'ri so'rov formati yoki contract_id parametri"
+        '401':
+          description: "Autentifikatsiya xatosi"
 
   # ----------------------------------------------------------------- 
   # SELLER: Shartnomalar bilan ishlash bo'limi (MXIK orqali o'ram turini olish)
