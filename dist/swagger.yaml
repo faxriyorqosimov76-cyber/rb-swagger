@@ -44,7 +44,9 @@ tags:
   - name: Seller tenders
     description: Ta'minotchi (Sotuvchi) oid tenderlar bilan ishlash bo'limi
   - name: Seller contracts
-    description: Ta'minotchi (Sotubchi) oid shartnomalar
+    description: Ta'minotchi (Sotuvchi) oid shartnomalar bilan ishlash bo'limi
+  - name: Seller profile
+    description: Ta'minotchi (Sotuvchi) profili va yuridik ma'lumotlari bilan ishlash bo'limi
 # =================================================================
 # 2. SERVERS (Server manzillari)
 # =================================================================
@@ -4166,6 +4168,501 @@ paths:
         '500':
           description: "Server xatosi"
 
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchi (Sotuvchi) profili va yuridik ma'lumotlari bilan ishlash bo'limi
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/user/info:
+    get:
+      tags:
+        - Seller profile
+      summary: "Foydalanuvchi ma'lumotlarini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResponse'
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchi ma'lumotlarini yangilash
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/user:
+    put:
+      tags:
+        - Seller profile
+      summary: "Foydalanuvchi ma'lumotlarini yangilash"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mobile_phone:
+                  type: string
+                  description: "Mobil telefon raqami"
+                  example: "998935547520"
+                address:
+                  type: string
+                  description: "Tashkilot manzili"
+                  example: "58-A HARBIY SHAHARCHA, 15-UY"
+                header_birth_date:
+                  type: string
+                  description: "Rahbarning tug'ilgan sanasi (YYYY-MM-DD)"
+                  example: "1980-05-15"
+                obl_id:
+                  type: integer
+                  description: "Viloyat identifikatori"
+                  example: 1
+                area_id:
+                  type: integer
+                  description: "Tuman identifikatori"
+                  example: 10
+                header_passport_number:
+                  type: string
+                  description: "Rahbarning pasport raqami"
+                  example: "AB1234567"
+                account:
+                  type: string
+                  description: "Bank hisob raqami"
+                  example: "20208000905434717001"
+                mfo:
+                  type: string
+                  description: "Bank MFO kodi"
+                  example: "01069"
+                tin:
+                  type: string
+                  description: "Tashkilot STIR raqami"
+                  example: "308835814"
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Foydalanuvchi ma'lumotlari muvaffaqiyatli yangilandi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object  
+                    properties:
+                      mobile_phone:
+                        type: string
+                        description: "Mobil telefon raqami"
+                        example: "998935547520"
+                      address:
+                        type: string
+                        description: "Tashkilot manzili"
+                        example: "58-A HARBIY SHAHARCHA, 15-UY"
+                      header_birth_date:
+                        type: string
+                        description: "Rahbarning tug'ilgan sanasi (YYYY-MM-DD)"
+                        example: "1980-05-15"
+                      obl_id:
+                        type: integer
+                        description: "Viloyat identifikatori"
+                        example: 1
+                      area_id:
+                        type: integer
+                        description: "Tuman identifikatori"
+                        example: 10
+                      header_passport_number:
+                        type: string
+                        description: "Rahbarning pasport raqami"
+                        example: "AB1234567"
+                      account:
+                        type: string
+                        description: "Bank hisob raqami"
+                        example: "20208000905434717001"
+                      mfo:
+                        type: string
+                        description: "Bank MFO kodi"
+                        example: "01069"
+                      tin:
+                        type: string
+                        description: "Tashkilot STIR raqami"
+                        example: "308835814"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+     
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchining to'lovlar ro'yxati va hisob-kitoblar bilan ishlash bo'limi
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/payments:
+    get:
+      tags:
+        - Seller profile
+      summary: "Ta'minotchining to'lovlar ro'yxati va hisob-kitoblar bilan ishlash"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: bdate
+          in: query
+          description: "Boshlanish sanasi (YYYY-MM-DD)"
+          required: false
+          schema:
+            type: string
+            example: "2026-01-01"
+        - name: edate
+          in: query
+          description: "Tugash sanasi (YYYY-MM-DD)"
+          required: false
+          schema:
+            type: string
+            example: "2026-12-31"
+        - name: transaction_type
+          in: query
+          description: "Tranzaksiya turi (masalan: 0, 1, 2)"
+          required: true
+          schema:
+            type: integer
+            example: 0
+        - name: payment_id
+          in: query
+          description: "To'lov turi identifikatori (masalan: 0, 1, 2, 3, 4, 5)"
+          required: true
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "To'lovlar ro'yxati muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _rownum:
+                          type: integer
+                          description: "Tartib raqami"
+                          example: 1
+                        doc_date:
+                          type: string
+                          description: "Hujjat sanasi"
+                          example: "2026-06-19 - 15:02"
+                        doc_num:
+                          type: string
+                          description: "Hujjat raqami"
+                          example: "INV-2026-001"
+                        mfo:
+                          type: string
+                          description: "Bank MFO kodi"
+                          example: "01069"
+                        account:
+                          type: string
+                          description: "Bank hisob raqami"
+                          example: "20208000905434717001"
+                        note:
+                          type: string
+                          description: "Izoh"
+                          example: "To'lov amalga oshirildi"
+                        debit_sum:
+                          type: number
+                          description: "Debet summasi"
+                          example: 11634000.00
+                        credit_sum:
+                          type: number
+                          description: "Kredit summasi"
+                          example: 0.00
+                        pay_state:
+                          type: integer
+                          description: "To'lov holati (-1 - Бекор қилинган, 0 - Ўчирилган, 1 - Кўчирилган)"
+                          example: 1
+                        doc_guid:
+                          type: string
+                          description: "Hujjatning unikal identifikatori (GUID)"
+                          example: "550e8400-e29b-41d4-a716-446655440000"
+                        doc_pin:
+                          type: string
+                          description: "Hujjatning PINFL raqami"
+                          example: "32311751470046"
+                        pay_aab:
+                          type: string
+                          description: "AAB to'lov holatlari"
+                          example: '"Запланирован"
+                        log_reason:
+                          type: string
+                          description: "Log xabari"
+                          example: "To'lov muvaffaqiyatli amalga oshirildi"
+                        saldo_state:
+                          type: string
+                          description: "Салдога олиш статуслари"
+                          example: "Ҳисобланган"
+                        transaction:
+                          type: string
+                          description: "Tranzaksiya turi"
+                          example: "Kirim"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Ta'minotchiga yangi to'lov qo'shishda foydalaniladigan endpoint
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/form/payment:
+    get:
+      tags:
+        - Seller profile
+      summary: "Ta'minotchiga yangi to'lov qo'shishda foydalaniladigan endpoint"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "To'lov formasi muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      mfo:
+                        type: string
+                        description: "Bank MFO kodi"
+                        example: "01069"
+                      account:
+                        type: string
+                        description: "Bank hisob raqami"
+                        example: "20208000905434717001"
+                      saldo:
+                        type: number
+                        description: "Joriy balans"
+                        example: 5000000.00
+                      doc_date:
+                        type: string
+                        description: "Hujjat sanasi (YYYY-MM-DD)"
+                        example: "2026-06-19"
+                      org_name:
+                        type: string
+                        description: "Tashkilot nomi"
+                        example: "TEX PRO-SILVER MCHJ"
+                      org_id:
+                        type: integer
+                        description: "Tashkilot STIR raqami"
+                        example: 204345170
+                      doc_num:
+                        type: string
+                        description: "Hujjat raqami"
+                        example: "PAY-2026-001"
+                      bank_name:
+                        type: string
+                        description: "Bank nomi"
+                        example: "DAVR BANK XATB"
+                      header_tin:
+                        type: string
+                        description: "Rahbar STIR raqami"
+                        example: "204345170"
+                      header_pinfl:
+                        type: string
+                        description: "Rahbar JSHSHIR (PINFL)"
+                        example: "32311751470046"
+                      header:
+                        type: string
+                        description: "Rahbarning to'liq ismi"
+                        example: "MAMADALIYEV BAXTIMUROD"
+                      check_acc:
+                        type: string
+                        description: "Tekshirish hisob raqami"
+                        example: "20208000905434717001"
+                      check_akey:
+                        type: string
+                        description: "Tekshirish AKEY"
+                        example: "AKEY123456
+                      check_account:
+                        type: string
+                        description: "Tekshirish hisob raqami"
+                        example: "20208000905434717001"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Mablag'ni qaytarish
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/payment:
+    post:
+      tags:
+        - Seller profile
+      summary: "Mablag'ni qaytarish endpoint"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: pay_sum
+          in: query
+          description: "Qaytariladigan summa (masalan: 1500000.00)"
+          required: true
+          schema:
+            type: number
+            format: float
+            example: 1500000.00
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Mablag' muvaffaqiyatli qaytarildi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      doc:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: "To'lov identifikatori"
+                            example: 12345
+                          pin:
+                            type: string
+                            description: "To'lov PINFL raqami"
+                            example: "32311751470046"
+                          documentUrl:
+                            type: string
+                            description: "To'lov hujjati URL manzili"
+                            example: "https://example.com/payment/12345"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+
+  # -----------------------------------------------------------------
+  # SELLER: Mablag'ni to'ldirish (RealPay orqali) endpoint
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/realpay/sm/pan-payment:
+    post:
+      tags:
+        - Seller profile
+      summary: "Mablag'ni to'ldirish (RealPay orqali) endpoint"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: amount
+          in: query
+          description: "To'lov summasi (masalan: 1500000.00)"
+          required: true
+          schema:
+            type: number
+            format: float
+            example: 1500000.00
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "To'lov muvaffaqiyatli amalga oshirildi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: string
+                    description: "To'lovni amalga oshirish uchun RealPay idisi"
+                    example: "123456789"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
 
 # =================================================================
 # 4. COMPONENTS (Ma'lumot modellari)
