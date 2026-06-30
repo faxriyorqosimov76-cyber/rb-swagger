@@ -2354,7 +2354,7 @@ paths:
   # ----------------------------------------------------------------- 
   # SELLER: Forma uchun Mahsulot ma'lumotlarini olish
   # -----------------------------------------------------------------
-  v1/mobile/seller/form/products: 
+  /v1/mobile/seller/form/products: 
     get:
       tags:
         - Seller tenders
@@ -2396,19 +2396,19 @@ paths:
                     type: object
                     properties:
                       old_product:
-                        type: String
+                        type: string
                         description: "Mahsulotning eski nomi (agar mavjud bo'lsa)"
                       name:
-                        type: String
+                        type: string
                         description: "Mahsulotning nomi"
                       name_ru:
-                        type: String
+                        type: string
                         description: "Mahsulotning ruscha nomi"
                       category_id:
                         type: integer
                         description: "Mahsulotning toifasi identifikatori"
                       identification_code:
-                        type: String
+                        type: string
                         description: "Mahsulotning MXIK kodi"
                       unit_id:
                         type: integer
@@ -2426,34 +2426,34 @@ paths:
                         type: integer
                         description: "Mahsulotning minimal miqdori"
                       technical_parameters:
-                        type: String
+                        type: string
                         description: "Mahsulotning texnik parametrlari"
                       technical_parameters_ru:
-                        type: String
+                        type: string
                         description: "Mahsulotning texnik parametrlari (ruscha)"
                       main_photo:
-                        type: String
+                        type: string
                         description: "Mahsulotning asosiy fotosi"
                       photos:
                         type: array
                         description: "Mahsulotning fotosuratlari"
                         items:
-                          type: String
+                          type: string
                           description: "Mahsulot fotosi URL manzili"
                       payment_types:
                         type: array
                         description: "Mahsulot uchun mavjud to'lov turlari"
                         items:
-                          type: String
+                          type: string
                           description: "To'lov turi"
                       delivery_types:
                         type: array
                         description: "Mahsulot uchun mavjud yetkazib berish turlari"
                         items:
-                          type: String
+                          type: string
                           description: "Yetkazib berish turi"
                       video_link:
-                        type: String
+                        type: string
                         description: "Mahsulotning video havolasi (agar mavjud bo'lsa)"
                       region_id:
                         type: integer
@@ -3881,7 +3881,7 @@ paths:
           description: "Ta'minotchi STIR raqami"
           required: true
           schema:
-            type: string
+            type: integer
             example: 308835814
       responses:
         '200':
@@ -4169,11 +4169,6 @@ paths:
           description: "Avtorizatsiya xatosi"
         '500':
           description: "Server xatosi"
-
-  # -----------------------------------------------------------------
-  # SELLER: Facturalar bilan ishlash bo'limi (facturani o'chirish)
-  # -----------------------------------------------------------------
-  /v1/mobile/seller/factura:
     delete:
       tags:
         - Seller facturas
@@ -4477,7 +4472,7 @@ paths:
                         pay_aab:
                           type: string
                           description: "AAB to'lov holatlari"
-                          example: '"Запланирован"
+                          example: "Запланирован"
                         log_reason:
                           type: string
                           description: "Log xabari"
@@ -4583,7 +4578,7 @@ paths:
                       check_akey:
                         type: string
                         description: "Tekshirish AKEY"
-                        example: "AKEY123456
+                        example: "AKEY123456"
                       check_account:
                         type: string
                         description: "Tekshirish hisob raqami"
