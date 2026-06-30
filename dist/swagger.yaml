@@ -45,6 +45,8 @@ tags:
     description: Ta'minotchi (Sotuvchi) oid tenderlar bilan ishlash bo'limi
   - name: Seller contracts
     description: Ta'minotchi (Sotuvchi) oid shartnomalar bilan ishlash bo'limi
+  - name: Seller facturas
+    description: Ta'minotchi (Sotuvchi) oid facturalar bilan ishlash bo'limi
   - name: Seller profile
     description: Ta'minotchi (Sotuvchi) profili va yuridik ma'lumotlari bilan ishlash bo'limi
 # =================================================================
@@ -3234,7 +3236,7 @@ paths:
           description: "Autentifikatsiya xatosi"
 
   # ----------------------------------------------------------------- 
-  # SELLER: Shartnomalar bilan ishlash bo'limi
+  # SELLER: Shartnomalar bilan ishlash bo'limi (Shartnomalarni olish)
   # -----------------------------------------------------------------
   /v1/mobile/seller/contracts:
     get:
@@ -3858,7 +3860,7 @@ paths:
                                       type: object
 
   # -----------------------------------------------------------------
-  # SELLER: Shartnomalar bilan ishlash bo'limi (Tashkilot ma'lumotlarini olish)
+  # SELLER: Shartnomalar bilan ishlash bo'limi (Tashkilot ma'lumotlarini olish va filiallarini olish)
   # -----------------------------------------------------------------
   /v1/mobile/seller/organization:
     get:
@@ -3908,12 +3910,12 @@ paths:
           description: "Server xatosi"
 
   # -----------------------------------------------------------------
-  # SELLER: Shartnomalar bilan ishlash bo'limi (Shartnoma bo'yicha faktura ma'lumotlarini olish)
+  # SELLER: Facturalar bilan ishlash bo'limi (faktura ma'lumotlarini olish)
   # -----------------------------------------------------------------
   /v1/mobile/seller/factura:
     get:
       tags:
-        - Seller contracts
+        - Seller facturas
       summary: "Shartnoma bo'yicha faktura ma'lumotlarini olish"
       security:
         - BearerAuth: []
@@ -4161,6 +4163,54 @@ paths:
                               type: integer
                               description: "Mahsulot holati"
                               example: 1
+        '400':
+          description: "Noto'g'ri so'rov"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Facturalar bilan ishlash bo'limi (facturani o'chirish)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/factura:
+    delete:
+      tags:
+        - Seller facturas
+      summary: "Fakturani o'chirish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          required: true
+          description: "Faktura identifikatori"
+          schema:
+            type: integer
+            example: 67890
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Faktura muvaffaqiyatli o'chirildi"
+                  status:
+                    type: integer
+                    example: 200
         '400':
           description: "Noto'g'ri so'rov"
         '401':
