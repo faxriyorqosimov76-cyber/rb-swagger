@@ -3406,6 +3406,77 @@ paths:
             description: "Server xatosi"
 
   # ----------------------------------------------------------------- 
+  # SELLER: Shartnomalar bilan ishlash bo'limi (Shartnomani bekor qilish bitimi)
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/contract/cancel/agreement:
+    post:
+      tags:
+        - Seller contracts
+      summary: "Shartnomani bekor qilish bitimi"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          required: true
+          description: "Bekor qilinadigan shartnoma identifikatori"
+          schema:
+            type: integer
+            example: 12345
+        - name: seller 
+          in: query
+          required: true
+          description: "Ta'minotchi yoki xaridor (1 yoki 0)"
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+            example: 1
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Shartnoma muvaffaqiyatli bekor qilindi"
+                  status:
+                    type: integer
+                    example: 200  
+                  data:
+                    type: object
+                    properties:
+                      link_seller: 
+                        type: object
+                        properties:
+                          link:
+                            type: string
+                            description: "Ta'minotchi uchun shartnoma bekor qilish bitimi havolasi"
+                            example: "https://example.com/contracts/cancel/seller/12345.pdf"
+
+        '400':
+          description: "Noto'g'ri so'rov formati yoki shartnoma ID-si"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"  
+        '404':
+          description: "Shartnoma topilmadi (contract_id noto'g'ri)"  
+        '500':
+          description: "Server xatosi"
+
+  # ----------------------------------------------------------------- 
   # SELLER: Hisob-faktura yaratish formasidagi ma'lumotlarni olish
   # -----------------------------------------------------------------
   /v1/mobile/seller/form/factura:
