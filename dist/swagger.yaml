@@ -3983,11 +3983,11 @@ paths:
   # -----------------------------------------------------------------
   # SELLER: Facturalar bilan ishlash bo'limi (faktura ma'lumotlarini olish)
   # -----------------------------------------------------------------
-  /v1/mobile/seller/factura:
+  /v1/mobile/seller/facturas:
     get:
       tags:
         - Seller facturas
-      summary: "Shartnoma bo'yicha faktura ma'lumotlarini olish"
+      summary: "Faktura ma'lumotlarini olish"
       security:
         - BearerAuth: []
       parameters:
@@ -3997,20 +3997,20 @@ paths:
           required: true
           schema:
             type: string
-        - name: contract_id
+        - name: seller_tin
           in: query
-          required: true
-          description: "Shartnoma identifikatori"
+          required: false
+          description: "Ta'minotchi STIR raqami (token dan olinadi, agar berilmasa token dagi tin ishlatiladi)"
           schema:
             type: integer
             example: 12345
-        - name: invoice_id
+        - name: doc_type
           in: query
           required: true
-          description: "Invoice identifikatori"
+          description: "Shartnoma turi (FAMILY_CREDIT, SUDO_MAHALLA, ALL)"
           schema:
-            type: integer
-            example: 67890
+            type: string
+            example: "FAMILY_CREDIT"
       responses:
         '200':
           description: "Muvaffaqiyatli javob"
@@ -4031,209 +4031,58 @@ paths:
                   data:
                     type: object
                     properties:
-                      invoice:
-                        type: object
-                        properties:
-                          doc_num:
-                            type: string
-                            example: "INV-2026-001"
-                          doc_date:
-                            type: string
-                            example: "19.06.2026"
-                          contract_num:
-                            type: string
-                            nullable: true
-                            example: "CNT-2026-001"
-                          contract_doc_date:
-                            type: string
-                            nullable: true
-                            example: "01.01.2026"
-                          seller_name:
-                            type: string
-                            example: "TEX PRO-SILVER MCHJ"
-                          seller_tin:
-                            type: integer
-                            example: 204345170
-                          seller_address:
-                            type: string
-                            nullable: true
-                            example: "Toshkent sh., Yunusobod t."
-                          seller_vat_code:
-                            type: string
-                            nullable: true
-                            example: "123456789"
-                          vat_rate:
-                            type: number
-                            nullable: true
-                            example: 12
-                          tax_status_code:
-                            type: integer
-                            nullable: true
-                            example: 21
-                          seller_mfo:
-                            type: string
-                            nullable: true
-                            example: "01069"
-                          seller_account:
-                            type: string
-                            nullable: true
-                            example: "20208000905434717001"
-                          realization_purpose:
-                            type: integer
-                            nullable: true
-                            example: 1
-                          seller_branch_code:
-                            type: string
-                            nullable: true
-                            example: "00"
-                          buyer_name:
-                            type: string
-                            example: "MANSUROVA DILDORAXON"
-                          buyer_tin:
-                            type: integer
-                            example: 308835814
-                          buyer_address:
-                            type: string
-                            nullable: true
-                            example: "Andijon viloyati, Baliqchi tumani"
-                          buyer_vat_code:
-                            type: string
-                            nullable: true
-                            example: "987654321"
-                          buyer_mfo:
-                            type: string
-                            nullable: true
-                            example: "00873"
-                          buyer_account:
-                            type: string
-                            nullable: true
-                            example: "20208000905434717002"
-                      products:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            num:
-                              type: integer
-                              description: "Tartib raqami (row_number)"
-                              example: 1
-                            product_id:
-                              type: integer
-                              description: "Mahsulot identifikatori"
-                              example: 1696974
-                            name:
-                              type: string
-                              description: "Mahsulot nomi"
-                              example: "электромотороллер"
-                            catalog:
-                              type: string
-                              description: "Katalog kodi va nomi birlashtrilgan"
-                              example: "(08711001001000000) Мотоциклы"
-                            catalogCode:
-                              type: string
-                              description: "Mahsulot katalog kodi"
-                              example: "08711001001000000"
-                            catalogName:
-                              type: string
-                              description: "Katalog nomi (sub_category + brend + attribute)"
-                              example: "Мотоциклы Honda 125cc"
-                            unitId:
-                              type: integer
-                              description: "O'lchov birligi identifikatori"
-                              example: 3
-                            unitName:
-                              type: string
-                              description: "O'lchov birligi nomi"
-                              example: "dona"
-                            amount:
-                              type: number
-                              description: "Miqdor"
-                              example: 1
-                            price:
-                              type: number
-                              description: "Narx"
-                              example: 10500000.00
-                            delivery_cost:
-                              type: number
-                              description: "Jami summa (total_sum)"
-                              example: 10500000.00
-                            qqs_id:
-                              type: number
-                              nullable: true
-                              description: "QQS stavkasi"
-                              example: 12
-                            qqs_sum:
-                              type: number
-                              nullable: true
-                              description: "QQS summasi"
-                              example: 1134000.00
-                            finalSum:
-                              type: number
-                              description: "Yakuniy summa (QQS bilan)"
-                              example: 11634000.00
-                            privilegeId:
-                              type: integer
-                              nullable: true
-                              description: "Imtiyoz identifikatori (faqat QQS bo'lmagan holatlarda)"
-                              example: null
-                            privilegeName:
-                              type: string
-                              description: "Imtiyoz nomi"
-                              example: "-"
-                            packageCode:
-                              type: string
-                              nullable: true
-                              description: "Qadoqlash kodi"
-                              example: "PCK001"
-                            packageName:
-                              type: string
-                              nullable: true
-                              description: "Qadoqlash nomi"
-                              example: "Quti"
-                            markingProductType:
-                              type: string
-                              nullable: true
-                              description: "Markirovka mahsulot turi"
-                              example: null
-                            markingPackageType:
-                              type: string
-                              nullable: true
-                              description: "Markirovka qadoqlash turi"
-                              example: null
-                            markingCode:
-                              type: string
-                              description: "Markirovka kodi (bo'sh bo'lsa '')"
-                              example: ""
-                            originId:
-                              type: integer
-                              nullable: true
-                              description: "Kelib chiqish identifikatori"
-                              example: 1
-                            mark_required:
-                              type: boolean
-                              nullable: true
-                              description: "Markirovka majburiymi"
-                              example: false
-                            additional_info:
-                              type: array
-                              description: "Qo'shimcha ma'lumotlar (JSON array)"
-                              items:
-                                type: object
-                              example: []
-                            model:
-                              type: string
-                              nullable: true
-                              description: "Mahsulot modeli"
-                              example: "Sport 2026"
-                            category_id:
-                              type: integer
-                              nullable: true
-                              description: "Kategoriya identifikatori"
-                              example: 10
-                            state:
-                              type: integer
-                              description: "Mahsulot holati"
-                              example: 1
+                      id:
+                        type: integer
+                        description: "Faktura identifikatori"
+                        example: 67890
+                      contract_id:
+                        type: integer
+                        description: "Shartnoma identifikatori"
+                        example: 12345
+                      doc_date:
+                        type: string
+                        description: "Faktura sanasi"
+                        example: "2026-06-20"
+                      asum:
+                        type: number
+                        description: "Faktura summasi"
+                        example: 15000000.00
+                      buyer_name:
+                        type: string
+                        description: "Xaridorning to'liq ismi"
+                        example: "Aliyev Jamshid"
+                      doc_num:
+                        type: string
+                        description: "Faktura raqami"
+                        example: "INV-2026-0001"
+                      seller_sign:
+                        type: string
+                        description: "Ta'minotchi imzolagan yoki yo'qligi"
+                        example: "2026-06-22T11:00:00"
+                      buyer_sign:
+                        type: string
+                        description: "Xaridor imzolagan yoki yo'qligi"
+                        example: "2026-06-21T10:30:00"
+                      doc_date_time:
+                        type: string
+                        description: "Faktura yaratilgan vaqt"
+                        example: "2026-06-20T09:00:00"
+                      link:
+                        type: string
+                        description: "Faktura hujjatiga havola"
+                        example: "https://example.com/facturas/67890.pdf"
+                      doc_status_text:
+                        type: string
+                        description: "Faktura holati matni"
+                        example: "Бекор қилинди"
+                      doc_status:
+                        type: string
+                        description: "Faktura holati"
+                        example: "CANCELED"
+                      is_corrector:
+                        type: boolean
+                        description: "Faktura to'g'rilovchi faktura ekanligi"
+                        example: false
         '400':
           description: "Noto'g'ri so'rov"
         '401':
