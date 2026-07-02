@@ -4575,6 +4575,125 @@ paths:
         '500':
           description: "Server xatosi"
 
+  # -----------------------------------------------------------------
+  # SELLER: Sms yuborish
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/send/sms:
+    post:
+      tags:
+        - Seller profile
+      summary: "Sms yuborish endpoint"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: UserAgent
+          in: header
+          description: "Foydalanuvchi agenti (Masalan: Mozilla/5.0 ...)"
+          required: true
+          schema:
+            type: string
+        - name: phone_number
+          in: query
+          description: "Telefon raqami (masalan: 998935547520)"
+          required: true
+          schema:
+            type: string
+            example: "998935547520"
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Sms muvaffaqiyatli yuborildi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: string
+                    description: "Yuborilgan sms identifikatori"
+                    example: "SMS123456789"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
+  # SELLER: Sms tasdiqlash
+  # -----------------------------------------------------------------
+  /v1/mobile/seller/verify/sms:
+    post:
+      tags:
+        - Seller profile
+      summary: "Sms tasdiqlash endpoint"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: security_code
+          in: query
+          description: "Sms tasdiqlash kodi (masalan: 123456)"
+          required: true
+          schema:
+            type: string
+            example: "123456"
+        - name: session_id
+          in: query
+          description: "Sms yuborilgan sessiya identifikatori"
+          required: true
+          schema:
+            type: string
+            example: "SESSION123456789"
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Sms muvaffaqiyatli tasdiqlandi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      code_valid:
+                        type: boolean
+                        description: "Sms tasdiqlangan yoki yo'qligi"
+                        example: true
+        '400':
+          description: "Noto'g'ri so'rov formati yoki noto'g'ri sms kodi"
+        '401':
+          description: "Avtorizatsiya xatosi"
+        '500':
+          description: "Server xatosi"
 
   # -----------------------------------------------------------------
   # SELLER: Mablag'ni to'ldirish (RealPay orqali) endpoint
