@@ -2606,6 +2606,10 @@ paths:
                   type: integer
                   description: "Tender raqami"
                   example: 67890
+                amount: 
+                  type: integer
+                  description: "Mahsulot miqdori"
+                  example: 1
       responses:
         '200':
           description: "Muvaffaqiyatli javob"
