@@ -3165,6 +3165,100 @@ paths:
           description: "Autentifikatsiya xatosi"
 
   # ----------------------------------------------------------------- 
+  # SELLER: Mahsulotlar ro'yxatini olish
+  # -----------------------------------------------------------------
+  v1/mobile/seller/products:
+    get:
+      tags:
+        - Seller tenders
+      summary: "Mahsulotlar ro'yxatini olish"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: true
+          description: "Sahifa raqami (1 dan boshlanadi)"
+          schema:
+            type: integer
+            example: 1
+        - name: page_size
+          in: query
+          required: true
+          description: "Sahifadagi elementlar soni"
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Mahsulotlar ro'yxati muvaffaqiyatli olindi"
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_id:
+                          type: integer
+                          description: "Mahsulot identifikatori"  
+                        product_name:
+                          type: string
+                          description: "Mahsulot nomi"
+                        product_price:
+                          type: number
+                          description: "Mahsulot narxi"
+                        status_text:
+                          type: string
+                          description: "Mahsulot holati matni"
+                        status_id:
+                          type: integer
+                          description: "Mahsulot holati identifikatori"
+                        created_at:
+                          type: string
+                          description: "Mahsulot yaratilgan sana"
+                        amount:
+                          type: number
+                          description: "Mahsulot miqdori"
+                        min_amount:
+                          type: number
+                          description: "Mahsulot minimal miqdori"
+                        all_sum:
+                          type: number
+                          description: "Mahsulot jami summasi"
+                        unit_name:
+                          type: string
+                          description: "Mahsulot o'lchov birligi nomi"
+        '400':
+          description: "Noto'g'ri so'rov formati"
+        '401':
+          description: "Autentifikatsiya xatosi"
+        '403':
+          description: "Ruxsat berilmagan so'rov (Token bilan bog'liq muammo)"
+        '500':
+          description: "Server xatosi"
+        
+
+
+  # ----------------------------------------------------------------- 
   # SELLER: Listdan data olish
   # -----------------------------------------------------------------
   /v1/mobile/seller/lists:
