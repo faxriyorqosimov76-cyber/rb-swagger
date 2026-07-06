@@ -3247,6 +3247,9 @@ paths:
                         unit_name:
                           type: string
                           description: "Mahsulot o'lchov birligi nomi"
+                        photo:
+                          type: string
+                          description: "Mahsulot fotosi URL manzili"
         '400':
           description: "Noto'g'ri so'rov formati"
         '401':
