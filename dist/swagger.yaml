@@ -4443,6 +4443,12 @@ paths:
                         description: "Shartnoma mahsulot identifikatori"
                         example: 54321
                         required: false
+                      markingCodes: 
+                        type: array
+                        description: "Markirovka kodlari ro'yxati"
+                        items:
+                          type: string
+                          example: "12345678901234"
       responses:
         '200':
           description: "Muvaffaqiyatli javob"
