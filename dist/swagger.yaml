@@ -4235,6 +4235,239 @@ paths:
           description: "Server xatosi"
 
   # -----------------------------------------------------------------
+  # SELLER: Facturalar bilan ishlash bo'limi (fakturani saqlash)
+  # -----------------------------------------------------------------
+  v1/mobile/seller/factura:
+    post:
+      tags:
+        - Seller facturas
+      summary: "Fakturani saqlash"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Bearer token (Masalan: Bearer {token})"
+          required: true
+          schema:
+            type: string
+        - name: doc_num
+          in: query
+          required: true
+          description: "Faktura raqami"
+          schema:
+            type: string
+            example: "INV-2026-0001"
+        - name: doc_date
+          in: query
+          required: true
+          description: "Faktura sanasi (YYYY-MM-DD)"
+          schema:
+            type: string
+            example: "2026-06-20"
+        - name: contract_id
+          in: query
+          required: true
+          description: "Shartnoma identifikatori"
+          schema:
+            type: integer
+            example: 12345
+        - name: type_id
+          in: query
+          required: true
+          description: "Faktura turi identifikatori"
+          schema:
+            type: integer
+            example: 0
+        - name: seller_vat_code
+          in: query
+          required: false
+          description: "Ta'minotchi QQS kodi"
+          schema:
+            type: string
+            example: "123456789"
+        - name: buyer_vat_code
+          in: query
+          required: false
+          description: "Xaridor QQS kodi"
+          schema:
+            type: string
+            example: "987654321"
+        - name: category_id
+          in: query
+          required: false
+          description: "Mahsulot kategoriyasi identifikatori"
+          schema:
+            type: integer
+            example: 1
+        - name: realization_purpose
+          in: query
+          required: false
+          description: "Tovarni realizatsiya qilish maqsadi"
+          schema:
+            type: integer
+            example: 1
+        - name: is_marking
+          in: query
+          required: false
+          description: "Markirovka talab qilinadimi (true/false)"
+          schema:
+            type: boolean
+            example: true
+        - name: seller_branch_code
+          in: query
+          required: false
+          description: "Ta'minotchi filial kodi"
+          schema:
+            type: string
+            example: "001"
+        - name: seller_branch_name
+          in: query
+          required: false
+          description: "Ta'minotchi filial nomi"
+          schema:
+            type: string
+            example: "Toshkent shahar filiali"
+        - name: buyer_branch_code
+          in: query
+          required: false
+          description: "Xaridor filial kodi"
+          schema:
+            type: string
+            example: "002"
+        - name: buyer_branch_name
+          in: query
+          required: false
+          description: "Xaridor filial nomi"
+          schema:
+            type: string
+            example: "Samarqand viloyati filiali"
+        - name: doc_id
+          in: query
+          required: false
+          description: "Faktura hujjati identifikatori (tahrirlash uchun)"
+          schema:
+            type: string
+            example: "67890"
+        - name: invoice_id
+          in: query
+          required: false
+          description: "Faktura identifikatori (tahrirlash uchun)"
+          schema:
+            type: integer
+            example: 67890
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: "Mahsulot identifikatori"
+                        example: 67890
+                        required: false
+                      num:
+                        type: integer
+                        description: "Mahsulot tartib raqami"
+                        example: 1
+                        required: true
+                      amount:
+                        type: number
+                        description: "Mahsulot miqdori"
+                        example: 100
+                        required: true
+                      price:
+                        type: number
+                        description: "Mahsulot narxi"
+                        example: 10500000
+                        required: true
+                      delivery_cost:
+                        type: number
+                        description: "Umumiy summa"
+                        example: 50000
+                        required: true
+                      qqs_id:
+                        type: integer
+                        description: "QQS stavkasi identifikatori"
+                        example: 1
+                        required: false
+                      qqs_sum:
+                        type: number
+                        description: "QQS summasi"
+                        example: 157500000
+                        required: false
+                      finalSum:
+                        type: number
+                        description: "Mahsulotning yakuniy summasi (narx * miqdor + yetkazib berish narxi + QQS)"
+                        example: 1051575000
+                        required: true
+                      sellerPrivilege:
+                        type: integer
+                        description: "Sotuvchi imtiyoz identifikatori"
+                        example: 1
+                        required: false
+                      originId:
+                        type: integer
+                        description: "Kelib chiqish identifikatori"
+                        example: 1
+                        required: false
+                      markingCode:
+                        type: string
+                        description: "Markirovka kodi"
+                        example: "12345678901234"
+                        required: false
+                      markingPackageType:
+                        type: integer
+                        description: "Qadoq markirovka turi"
+                        example: 1
+                        required: false
+                      markingProductType:
+                        type: integer
+                        description: "Mahsulot markirovka turi"
+                        example: 1
+                        required: false
+                      state:
+                        type: string
+                        description: "Mahsulot holati"
+                        example: "Yangi"
+                        required: false
+                      doc_product_id:
+                        type: integer
+                        description: "Shartnoma mahsulot identifikatori"
+                        example: 54321
+                        required: false
+      responses:
+        '200':
+          description: "Muvaffaqiyatli javob"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: "Faktura muvaffaqiyatli saqlandi"
+                  status:
+                    type: integer
+                    example: 200
+        '400':
+          description: "Noto'g'ri so'rov formati yoki ma'lumotlar yetarli emas"
+        '401':
+          description: "Avtorizatsiya xatosi (Token xato yoki muddati o'tgan)"
+        '500':
+          description: "Server xatosi"
+
+  # -----------------------------------------------------------------
   # SELLER: Ta'minotchi (Sotuvchi) profili va yuridik ma'lumotlari bilan ishlash bo'limi
   # -----------------------------------------------------------------
   /v1/mobile/seller/user/info:
