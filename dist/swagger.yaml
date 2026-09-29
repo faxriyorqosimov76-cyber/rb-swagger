@@ -3171,7 +3171,7 @@ paths:
   # ----------------------------------------------------------------- 
   # SELLER: Mahsulotlar ro'yxatini olish
   # -----------------------------------------------------------------
-  v1/mobile/seller/products:
+  /v1/mobile/seller/products:
     get:
       tags:
         - Seller tenders
@@ -4237,7 +4237,7 @@ paths:
   # -----------------------------------------------------------------
   # SELLER: Facturalar bilan ishlash bo'limi (fakturani saqlash)
   # -----------------------------------------------------------------
-  v1/mobile/seller/factura:
+  /v1/mobile/seller/factura:
     post:
       tags:
         - Seller facturas
@@ -4362,6 +4362,12 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - num
+                - amount
+                - price
+                - delivery_cost
+                - finalSum
               properties:
                 products:
                   type: array
@@ -4372,77 +4378,62 @@ paths:
                         type: integer
                         description: "Mahsulot identifikatori"
                         example: 67890
-                        required: false
                       num:
                         type: integer
                         description: "Mahsulot tartib raqami"
                         example: 1
-                        required: true
                       amount:
                         type: number
                         description: "Mahsulot miqdori"
-                        example: 100
-                        required: true
+                        example: 100                        
                       price:
                         type: number
                         description: "Mahsulot narxi"
                         example: 10500000
-                        required: true
                       delivery_cost:
                         type: number
                         description: "Umumiy summa"
                         example: 50000
-                        required: true
                       qqs_id:
                         type: integer
                         description: "QQS stavkasi identifikatori"
                         example: 1
-                        required: false
                       qqs_sum:
                         type: number
                         description: "QQS summasi"
                         example: 157500000
-                        required: false
                       finalSum:
                         type: number
                         description: "Mahsulotning yakuniy summasi (narx * miqdor + yetkazib berish narxi + QQS)"
                         example: 1051575000
-                        required: true
                       sellerPrivilege:
                         type: integer
                         description: "Sotuvchi imtiyoz identifikatori"
                         example: 1
-                        required: false
                       originId:
                         type: integer
                         description: "Kelib chiqish identifikatori"
                         example: 1
-                        required: false
                       markingCode:
                         type: string
                         description: "Markirovka kodi"
                         example: "12345678901234"
-                        required: false
                       markingPackageType:
                         type: integer
                         description: "Qadoq markirovka turi"
                         example: 1
-                        required: false
                       markingProductType:
                         type: integer
                         description: "Mahsulot markirovka turi"
                         example: 1
-                        required: false
                       state:
                         type: string
                         description: "Mahsulot holati"
                         example: "Yangi"
-                        required: false
                       doc_product_id:
                         type: integer
                         description: "Shartnoma mahsulot identifikatori"
                         example: 54321
-                        required: false
                       markingCodes: 
                         type: array
                         description: "Markirovka kodlari ro'yxati"
